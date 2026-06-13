@@ -1,0 +1,38 @@
+# Archivos sensibles - NUNCA subir a GitHub
+*.json  # Archivos de credenciales/keys
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Datos sensibles
+credentials/
+secrets/
+private/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporales
+*.tmp
+*.log
+
+# Node (si usas)
+node_modules/
+package-lock.json
+
+# Python
+__pycache__/
+*.pyc
+.Python
+venv/
+env/
