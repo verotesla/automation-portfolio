@@ -176,8 +176,8 @@ Este es uno de los proyectos más demandados en Workana. Clientes pequeños y me
 ¿Quieres que implemente esto para tu negocio?
 
 - 📧 ing.vernonicaph@gmail.com
-- 💼 [Tu Workana profile]
-- 💬 WhatsApp: [Tu número]
+- 💼 [Workana profile]
+- 💬 WhatsApp: [446128975]
 
 **Tiempo de implementación**: 1-2 días
 
