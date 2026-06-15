@@ -1,0 +1,353 @@
+{
+  "name": "Email Categorization",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -336,
+        0
+      ],
+      "id": "0df14c89-82e9-47c6-881c-0abbf4982ddb",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "n9oePiD5h1MNRefK",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ [\"urgente\",\"urgent\",\"asap\",\"error\",\"no funciona\"].some(p => ($json.Subject || \"\").toLowerCase().includes(p)) }}",
+                    "rightValue": "urgente",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "bb73c71a-a830-4b58-9f50-c50588011c84"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5f17a867-9fd8-4932-a3d6-688ea7239cbf",
+                    "leftValue": "={{ [\"propuesta\",\"cotización\",\"cotizacion\",\"presupuesto\",\"proposal\",\"quote\",\"contratar\"].some(p => ($json.Subject || \"\").toLowerCase().includes(p)) }}",
+                    "rightValue": "propuesta",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ea140eac-f070-4e82-8db2-003c233ae9e7",
+                    "leftValue": "={{ [\"factura\",\"invoice\",\"pago\",\"payment\",\"recibo\",\"transferencia\",\"cobro\"].some(p => ($json.Subject || \"\").toLowerCase().includes(p)) }}",
+                    "rightValue": "factura",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0e932364-c4d8-4948-b6e4-0287aed7fa88",
+                    "leftValue": "={{ [\"ayuda\",\"help\",\"soporte\",\"support\",\"duda\",\"consulta\",\"how to\"].some(p => ($json.Subject || \"\").toLowerCase().includes(p)) }}",
+                    "rightValue": "ayuda",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d32130e2-073f-4dc9-a131-3d8f6582c5c9",
+                    "leftValue": "={{ [\"newsletter\",\"boletín\",\"boletin\",\"promoción\",\"promocion\",\"unsubscribe\",\"oferta\",\"descuento\"].some(p => ($json.Subject || \"\").toLowerCase().includes(p)) }}",
+                    "rightValue": "newsletter",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "ignoreCase": true,
+          "allMatchingOutputs": true
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        -48
+      ],
+      "id": "399a5d98-2a7f-4d1d-abba-f3f642dee3e2",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_9186601793909140354"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        -288
+      ],
+      "id": "0a14cdf7-4952-4add-a106-cb3797a55fec",
+      "name": "Urgente",
+      "webhookId": "0f1d8ff9-5027-4f25-b361-7b45bed5bca7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "n9oePiD5h1MNRefK",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_2503130968990325764"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        -144
+      ],
+      "id": "c1afc906-43e2-417d-b517-9399d97ccfed",
+      "name": "Clientes",
+      "webhookId": "1dba5539-5ade-485d-aa2a-671c62038f15",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "n9oePiD5h1MNRefK",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_5771310029058596642"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        144
+      ],
+      "id": "a254825e-33a5-4dd4-855f-d01636ba5eb7",
+      "name": " Soporte",
+      "webhookId": "d07a5257-0498-4df5-9b01-50d1dbcbdca9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "n9oePiD5h1MNRefK",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_2259075300222401617"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        288
+      ],
+      "id": "98302e36-ab78-4869-8041-a7bfd34c8123",
+      "name": "Newsletters",
+      "webhookId": "7498392c-fe60-4694-b5b6-c0d38b926d89",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "n9oePiD5h1MNRefK",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_6041970404073560857"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        16
+      ],
+      "id": "2293c840-a4d8-4ec3-8b77-abda3b9cde10",
+      "name": "Factura",
+      "webhookId": "804a99df-e2e9-4204-a10c-83a2e89f41e7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "n9oePiD5h1MNRefK",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Urgente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Clientes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Factura",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": " Soporte",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Newsletters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a9cf93b4-941b-4171-87aa-d35060dd2fd6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cb28012689836221fd7a8290b41de9829c27c4707b9f1e96b5709e702e2bf102"
+  },
+  "nodeGroups": [],
+  "id": "7evI8xIPCL2z14p6",
+  "tags": []
+}

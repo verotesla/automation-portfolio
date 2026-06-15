@@ -1,6 +1,6 @@
 # 🤖 Portafolio de Automatización con n8n & Make
 
-![Proyectos](https://img.shields.io/badge/Proyectos-2%2F20-blue)
+![Proyectos](https://img.shields.io/badge/Proyectos-3%2F20-blue)
 ![Herramientas](https://img.shields.io/badge/Stack-n8n%20%7C%20Make%20%7C%20APIs-purple)
 ![Estado](https://img.shields.io/badge/Estado-En%20progreso-yellow)
 
@@ -25,7 +25,7 @@ Combino experiencia en análisis de datos, Python y plataformas low-code para co
 |---|----------|-------|--------|
 | 1 | [Google Forms → Sheets + Email](./proyecto-01-forms-sheets-email) | Básico | ✅ Completado |
 | 2 | [Slack → Airtable + Reacción](./proyecto-02-slack-airtable) | Intermedio | ✅ Completado |
-| 3 | Email → Categorización + Etiquetas Gmail | Básico | ⏳ Pendiente |
+| 3 | [Email → Categorización + Etiquetas Gmail](./proyecto-03-email-categorization) | Básico | ✅ Completado |
 | 4 | WhatsApp → Sheets → Notificación Telegram | Básico | ⏳ Pendiente |
 | 5 | Typeform → Asana + Slack + Sheets | Básico | ⏳ Pendiente |
 | 6 | Google Contacts ↔ Airtable (sync bidireccional) | Intermedio | ⏳ Pendiente |
@@ -44,7 +44,7 @@ Combino experiencia en análisis de datos, Python y plataformas low-code para co
 | 19 | Meta (FB/IG/WhatsApp) + Make.com + Gemini AI | Avanzado | ⏳ Pendiente |
 | 20 | GoHighLevel — Plataforma completa (CRM + funnels + IA) | Avanzado | ⏳ Pendiente |
 
-**Progreso:** 2 de 20 proyectos completados.
+**Progreso:** 3 de 20 proyectos completados.
 
 ---
 
@@ -61,7 +61,7 @@ Combino experiencia en análisis de datos, Python y plataformas low-code para co
 
 ## 📂 Estructura del repositorio
 
-```
+\`\`\`
 automation-portfolio/
 ├── README.md                          ← este archivo (índice general)
 ├── .gitignore
@@ -71,13 +71,19 @@ automation-portfolio/
 │   ├── case-study.md
 │   ├── assets/
 │   └── workflows/
-└── proyecto-02-slack-airtable/
+├── proyecto-02-slack-airtable/
+│   ├── README.md
+│   ├── setup-guide.md
+│   ├── case-study.md
+│   ├── assets/
+│   └── workflows/
+└── proyecto-03-email-categorization/
     ├── README.md
     ├── setup-guide.md
     ├── case-study.md
     ├── assets/
     └── workflows/
-```
+\`\`\`
 
 Cada carpeta de proyecto es autocontenida y puede leerse de forma independiente.
 
@@ -87,9 +93,9 @@ Cada carpeta de proyecto es autocontenida y puede leerse de forma independiente.
 
 | Nivel | Tipo de proyecto | Valor estimado (freelance) |
 |-------|------------------|----------------------------|
-| Básico | Integraciones simples (2 apps) | $200 – $400 USD |
-| Intermedio | Multi-paso, transformaciones, varias apps | $400 – $800 USD |
-| Avanzado | Agentes IA, plataformas completas | $800 – $5,000 USD |
+| Básico | Integraciones simples (2 apps) | \$200 – \$400 USD |
+| Intermedio | Multi-paso, transformaciones, varias apps | \$400 – \$800 USD |
+| Avanzado | Agentes IA, plataformas completas | \$800 – \$5,000 USD |
 
 ---
 
