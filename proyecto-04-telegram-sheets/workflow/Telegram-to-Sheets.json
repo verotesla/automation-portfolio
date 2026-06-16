@@ -1,0 +1,477 @@
+{
+  "name": "Telegram to Sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d2e5f6da-e48b-4661-b37d-3934ddf52468",
+      "name": "Telegram Trigger",
+      "webhookId": "7ef1789b-493f-4f1e-835b-b700a6ac12da",
+      "credentials": {
+        "telegramApi": {
+          "id": "tXBTGfaq0CZUUh3F",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/18oKjA-D6KojT2NiVtNUfpO8V6W6AYNFCgBSkTP-70rs/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18oKjA-D6KojT2NiVtNUfpO8V6W6AYNFCgBSkTP-70rs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha": "={{ DateTime.fromSeconds($json.message.date).toFormat('dd/MM/yyyy HH:mm:ss') }}",
+            "Usuario": "={{ $json.message.from.first_name }}",
+            "Mensaje": "={{ $json.message.text }}",
+            "ChatID": "={{ $json.message.message_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Usuario",
+              "displayName": "Usuario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Mensaje",
+              "displayName": "Mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ChatID",
+              "displayName": "ChatID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "57fa6244-52f6-4102-bd65-9befbbbeae89",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BEbXUFafwWr2JWt9",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "✅ ¡Mensaje recibido y guardado! Gracias por escribir.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        320
+      ],
+      "id": "985cd981-6da6-45f5-ab97-a752204b5900",
+      "name": "Send a text message",
+      "webhookId": "844e5e9a-74e3-4a07-952c-466c7e11ec9b",
+      "credentials": {
+        "telegramApi": {
+          "id": "tXBTGfaq0CZUUh3F",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ [\"hola\",\"buenas\",\"hi\",\"hello\"].some(p => ($json.Mensaje || \"\").toLowerCase().includes(p)) }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "2d481478-21d9-4fff-8603-24bacfdb911e"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6be6a04f-3ddb-4e93-b91d-461680b890bc",
+                    "leftValue": "={{ [\"precio\",\"costo\",\"cuánto\",\"cuanto\",\"cotización\",\"cotizacion\"].some(p => ($json.Mensaje || \"\").toLowerCase().includes(p)) }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c2cc9af1-5636-48c4-afe9-1515cf08c4c3",
+                    "leftValue": "={{ [\"horario\",\"abierto\",\"atención\",\"atencion\",\"hora\"].some(p => ($json.Mensaje || \"\").toLowerCase().includes(p)) }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d83c58e6-1d32-4035-b36b-3792ec0e2b2e",
+                    "leftValue": "={{ [\"ayuda\",\"soporte\",\"problema\",\"help\"].some(p => ($json.Mensaje || \"\").toLowerCase().includes(p)) }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "cac628c8-5cd5-4220-b37a-3fb0eb9ab1de",
+                    "leftValue": "={{ [\"ubicación\",\"ubicacion\",\"dónde\",\"donde\",\"dirección\",\"direccion\"].some(p => ($json.Mensaje || \"\").toLowerCase().includes(p)) }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        -64
+      ],
+      "id": "f3e14702-7e70-481b-b627-92f9fe44e8bd",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=¡Hola! 👋 Gracias por escribir. ¿En qué puedo ayudarte?",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        -352
+      ],
+      "id": "9fd1e4f6-8ca3-4932-b86a-b906fea1012a",
+      "name": "Saludo",
+      "webhookId": "2431f83a-ce11-46b3-b1c3-bb06cd505ace",
+      "credentials": {
+        "telegramApi": {
+          "id": "tXBTGfaq0CZUUh3F",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=💰 Con gusto te comparto información de precios. Un asesor te contactará pronto.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        -224
+      ],
+      "id": "a406dc34-4f8d-440e-aad8-02804f1a46ab",
+      "name": "Precio",
+      "webhookId": "2cf59715-6ae5-40e5-ab8e-385bddbb568c",
+      "credentials": {
+        "telegramApi": {
+          "id": "tXBTGfaq0CZUUh3F",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=🕐 Nuestro horario es de Lunes a Viernes, 9:00 a 18:00.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        -96
+      ],
+      "id": "2159610b-8691-4f6f-9d57-399e2715916e",
+      "name": "Horario",
+      "webhookId": "d7518327-2634-451e-819b-32b7967f568b",
+      "credentials": {
+        "telegramApi": {
+          "id": "tXBTGfaq0CZUUh3F",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=🛠️ Entiendo que necesitas ayuda. Tu mensaje fue registrado y te atenderemos pronto.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        48
+      ],
+      "id": "0c4e84a0-073a-4cd1-8b67-ef030c3935d9",
+      "name": "Ayuda",
+      "webhookId": "e1e30c0d-dfed-4d33-a453-06a7bb5f2083",
+      "credentials": {
+        "telegramApi": {
+          "id": "tXBTGfaq0CZUUh3F",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=📍 Estamos ubicados en Av. Siempre viva 195, colonia Àlamos. ¡Te esperamos!",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        176
+      ],
+      "id": "41038ca6-cade-44c8-861a-e22533fb1260",
+      "name": "Ubicación",
+      "webhookId": "f3b5c56a-f7fd-4791-b9df-53d62a301483",
+      "credentials": {
+        "telegramApi": {
+          "id": "tXBTGfaq0CZUUh3F",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Saludo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Precio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Horario",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ayuda",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ubicación",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Saludo": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a12504c9-abd2-4a67-b807-10d437044954",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cb28012689836221fd7a8290b41de9829c27c4707b9f1e96b5709e702e2bf102"
+  },
+  "nodeGroups": [],
+  "id": "rzPpAlzSbxihgsjl",
+  "tags": []
+}
