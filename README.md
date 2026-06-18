@@ -24,7 +24,7 @@ Combino experiencia en análisis de datos, Python y plataformas low-code para co
 | # | Proyecto | Nivel | Estado |
 |---|----------|-------|--------|
 | 1 | [Google Forms → Sheets + Email](./proyecto-01-forms-sheets-email) | Básico | ✅ Completado |
-| 2 | [Slack → Airtable + Reacción](./proyecto-02-slack-airtable) | Intermedio | ✅ Completado |
+| 2 | [Slack → Airtable + Reacción](./proyecto-02-slack-airtable) | Bascio | ✅ Completado |
 | 3 | [Email → Categorización + Etiquetas Gmail](./proyecto-03-email-categorization) | Básico | ✅ Completado |
 | 4 | [Bot de Telegram → Sheets + Respuestas](./proyecto-04-telegram-sheets) | Básico | ✅ Completado |
 | 5 | [Typeform → Asana + Slack + Sheets (Fan-out)](./proyecto-05-typeform-multidestino) | Intermedio | ✅ Completado |
