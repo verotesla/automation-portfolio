@@ -1,0 +1,271 @@
+{
+  "name": "Airtable to Google Contacts",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c50041e2-1ba7-453d-9b5b-0c20dadb426b",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appqLRLHkhLMWB3s5",
+          "mode": "list",
+          "cachedResultName": "Contactos ",
+          "cachedResultUrl": "https://airtable.com/appqLRLHkhLMWB3s5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblrXM5kOufnAis4T",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appqLRLHkhLMWB3s5/tblrXM5kOufnAis4T"
+        },
+        "filterByFormula": "NOT({Sincronizado a Google})",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "c82794e8-878f-4d48-87c3-1cb6262c5e9b",
+      "name": "Search records",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "fgRB30cv09SC1y9q",
+          "name": "Airtable OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "givenName": "={{ $json.fields.Nombre }}",
+        "additionalFields": {
+          "emailsUi": {
+            "emailsValues": [
+              {
+                "type": "home",
+                "value": "={{ $json.fields.Email }}"
+              }
+            ]
+          },
+          "phoneUi": {
+            "phoneValues": [
+              {
+                "type": "mobile",
+                "value": "={{ $json.fields.Teléfono }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleContacts",
+      "typeVersion": 1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "a50c9c70-37a1-4ac8-9c41-4c12e05fe93e",
+      "name": "Create a contact",
+      "credentials": {
+        "googleContactsOAuth2Api": {
+          "id": "JuUE22Xj8oyFgBZB",
+          "name": "Google Contacts OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appqLRLHkhLMWB3s5",
+          "mode": "list",
+          "cachedResultName": "Contactos ",
+          "cachedResultUrl": "https://airtable.com/appqLRLHkhLMWB3s5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblrXM5kOufnAis4T",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appqLRLHkhLMWB3s5/tblrXM5kOufnAis4T"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Sincronizado a Google": true,
+            "id": "={{ $('Search records').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Teléfono",
+              "displayName": "Teléfono",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Empresa",
+              "displayName": "Empresa",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Última actualización",
+              "displayName": "Última actualización",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Sincronizado a Google",
+              "displayName": "Sincronizado a Google",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "387f8064-026d-4b9b-86e4-ac8146aab6a6",
+      "name": "Update record",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "fgRB30cv09SC1y9q",
+          "name": "Airtable OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "Create a contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a contact": {
+      "main": [
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "14815de1-5d6c-455e-87a1-42b2fc425b92",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cb28012689836221fd7a8290b41de9829c27c4707b9f1e96b5709e702e2bf102"
+  },
+  "nodeGroups": [],
+  "id": "k6pPPb58WVbjc6Xy",
+  "tags": []
+}

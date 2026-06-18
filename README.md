@@ -1,6 +1,6 @@
 # 🤖 Portafolio de Automatización con n8n & Make
 
-![Proyectos](https://img.shields.io/badge/Proyectos-5%2F20-blue)
+![Proyectos](https://img.shields.io/badge/Proyectos-6%2F20-blue)
 ![Herramientas](https://img.shields.io/badge/Stack-n8n%20%7C%20Make%20%7C%20APIs-purple)
 ![Estado](https://img.shields.io/badge/Estado-En%20progreso-yellow)
 
@@ -28,7 +28,7 @@ Combino experiencia en análisis de datos, Python y plataformas low-code para co
 | 3 | [Email → Categorización + Etiquetas Gmail](./proyecto-03-email-categorization) | Básico | ✅ Completado |
 | 4 | [Bot de Telegram → Sheets + Respuestas](./proyecto-04-telegram-sheets) | Básico | ✅ Completado |
 | 5 | [Typeform → Asana + Slack + Sheets (Fan-out)](./proyecto-05-typeform-multidestino) | Intermedio | ✅ Completado |
-| 6 | Google Contacts ↔ Airtable (sync bidireccional) | Intermedio | ⏳ Pendiente |
+| 6 | [Google Contacts ↔ Airtable (sync bidireccional)](./proyecto-06-contacts-airtable-sync) | Intermedio | ✅ Completado |
 | 7 | Weather API + IoT → Dashboard automático | Intermedio | ⏳ Pendiente |
 | 8 | Shopify → Inventario + Alertas | Intermedio | ⏳ Pendiente |
 | 9 | Lead Scoring + Salesforce CRM | Intermedio | ⏳ Pendiente |
@@ -44,7 +44,7 @@ Combino experiencia en análisis de datos, Python y plataformas low-code para co
 | 19 | Meta (FB/IG/WhatsApp) + Make.com + Gemini AI | Avanzado | ⏳ Pendiente |
 | 20 | GoHighLevel — Plataforma completa (CRM + funnels + IA) | Avanzado | ⏳ Pendiente |
 
-**Progreso:** 5 de 20 proyectos completados.
+**Progreso:** 6 de 20 proyectos completados.
 
 ---
 
@@ -54,10 +54,10 @@ Combino experiencia en análisis de datos, Python y plataformas low-code para co
 - **Bases de datos:** Airtable, Google Sheets, BigQuery
 - **Comunicación:** Slack, Gmail, Telegram, WhatsApp, SMS
 - **Formularios:** Typeform, Google Forms
-- **Gestión de tareas / CRM:** Asana, Salesforce, GoHighLevel
+- **Gestión / CRM:** Asana, Google Contacts, Salesforce, GoHighLevel
 - **IA:** OpenAI, Gemini, Pinecone (vector DB)
 - **E-commerce:** Shopify
-- **Conceptos:** Webhooks, OAuth2, APIs REST, fan-out, expresiones (Luxon), RAG, agentes con IA
+- **Conceptos:** Webhooks, OAuth2, APIs REST, fan-out, upsert/idempotencia, prevención de bucles, expresiones (Luxon), RAG, agentes con IA
 
 ---
 
@@ -71,7 +71,8 @@ automation-portfolio/
 ├── proyecto-02-slack-airtable/
 ├── proyecto-03-email-categorization/
 ├── proyecto-04-telegram-sheets/
-└── proyecto-05-typeform-multidestino/
+├── proyecto-05-typeform-multidestino/
+└── proyecto-06-contacts-airtable-sync/
     ├── README.md
     ├── setup-guide.md
     ├── case-study.md
@@ -88,7 +89,7 @@ Cada carpeta de proyecto es autocontenida y puede leerse de forma independiente.
 | Nivel | Tipo de proyecto | Valor estimado (freelance) |
 |-------|------------------|----------------------------|
 | Básico | Integraciones simples (2 apps) | \$200 – \$400 USD |
-| Intermedio | Multi-paso, transformaciones, varias apps | \$400 – \$800 USD |
+| Intermedio | Multi-paso, transformaciones, varias apps | \$400 – \$900 USD |
 | Avanzado | Agentes IA, plataformas completas | \$800 – \$5,000 USD |
 
 ---
