@@ -1,0 +1,203 @@
+{
+  "name": "Typeform Multi-destino",
+  "nodes": [
+    {
+      "parameters": {
+        "formId": "PtYplNK5"
+      },
+      "type": "n8n-nodes-base.typeformTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -128,
+        -48
+      ],
+      "id": "410e26db-7e56-4771-956b-e1db26e4c253",
+      "name": "Typeform Trigger",
+      "webhookId": "92804f72-dc35-4f68-9f5e-316a9ffa3688",
+      "credentials": {
+        "typeformApi": {
+          "id": "BkMksMwCuL8TIaM5",
+          "name": "Typeform account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1UKZ6-1gnPWf1KgAK4Mmpy9ZSSi31x9m1hXfe-8DdtP8",
+          "mode": "list",
+          "cachedResultName": "Solicitudes de Servicio",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UKZ6-1gnPWf1KgAK4Mmpy9ZSSi31x9m1hXfe-8DdtP8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UKZ6-1gnPWf1KgAK4Mmpy9ZSSi31x9m1hXfe-8DdtP8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha": "={{ $now.toFormat('dd/MM/yyyy HH:mm:ss') }}",
+            "Nombre": "={{ $json[\"¿Cuál es tu nombre?\"] }}",
+            "Email": "={{ $json[\"Tipo de servicio\"] }}",
+            "Servicio": "={{ $json[\"Descripción\"] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Servicio",
+              "displayName": "Servicio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        240,
+        -240
+      ],
+      "id": "5f3778d2-7f88-4ef9-8fbf-9e1ebeac649e",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BEbXUFafwWr2JWt9",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BABMRGAEA",
+          "mode": "id"
+        },
+        "text": "=🔔 Nueva solicitud de servicio  👤 Nombre: {{ $('Typeform Trigger').item.json[\"¿Cuál es tu nombre?\"] }} 📧 Email: {{ $('Typeform Trigger').item.json[\"¿Cuál es tu correo electrónico?\"] }} 🛠️ Servicio: {{ $('Typeform Trigger').item.json[\"Tipo de servicio\"] }} 📝 Descripción: {{ $('Typeform Trigger').item.json[\"Descripción\"] }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        240,
+        -48
+      ],
+      "id": "9d4d1327-3fd5-4b89-80f7-be25f00ddbe8",
+      "name": "Send a message",
+      "webhookId": "fa3f9f21-09cb-4c5e-b148-41eb0b0b6c31",
+      "credentials": {
+        "slackApi": {
+          "id": "2lY7RE5d0k2c46We",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "workspace": "1215813376124555",
+        "name": "=Nueva solicitud: {{ $('Typeform Trigger').item.json[\"¿Cuál es tu nombre?\"] }} - {{ $('Typeform Trigger').item.json[\"Tipo de servicio\"] }}",
+        "otherProperties": {
+          "notes": "=📧 Email: {{ $('Typeform Trigger').item.json[\"¿Cuál es tu correo electrónico?\"] }}\n📝 Descripción: {{ $('Typeform Trigger').item.json[\"Descripción\"] }}",
+          "projects": [
+            "1215815849473399"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.asana",
+      "typeVersion": 1,
+      "position": [
+        240,
+        144
+      ],
+      "id": "e5d24e51-d6d3-43f3-b82a-7520fafdb0fe",
+      "name": "Create a task",
+      "credentials": {
+        "asanaOAuth2Api": {
+          "id": "5zWNrQWIsErOdqxH",
+          "name": "Asana OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Typeform Trigger": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "fc0805b0-da26-4d66-8a14-ee95ce28eb9d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cb28012689836221fd7a8290b41de9829c27c4707b9f1e96b5709e702e2bf102"
+  },
+  "nodeGroups": [],
+  "id": "rFt0GSwmN1kFP2TX",
+  "tags": []
+}

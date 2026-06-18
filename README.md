@@ -1,6 +1,6 @@
 # 🤖 Portafolio de Automatización con n8n & Make
 
-![Proyectos](https://img.shields.io/badge/Proyectos-4%2F20-blue)
+![Proyectos](https://img.shields.io/badge/Proyectos-5%2F20-blue)
 ![Herramientas](https://img.shields.io/badge/Stack-n8n%20%7C%20Make%20%7C%20APIs-purple)
 ![Estado](https://img.shields.io/badge/Estado-En%20progreso-yellow)
 
@@ -27,7 +27,7 @@ Combino experiencia en análisis de datos, Python y plataformas low-code para co
 | 2 | [Slack → Airtable + Reacción](./proyecto-02-slack-airtable) | Intermedio | ✅ Completado |
 | 3 | [Email → Categorización + Etiquetas Gmail](./proyecto-03-email-categorization) | Básico | ✅ Completado |
 | 4 | [Bot de Telegram → Sheets + Respuestas](./proyecto-04-telegram-sheets) | Básico | ✅ Completado |
-| 5 | Typeform → Asana + Slack + Sheets | Básico | ⏳ Pendiente |
+| 5 | [Typeform → Asana + Slack + Sheets (Fan-out)](./proyecto-05-typeform-multidestino) | Intermedio | ✅ Completado |
 | 6 | Google Contacts ↔ Airtable (sync bidireccional) | Intermedio | ⏳ Pendiente |
 | 7 | Weather API + IoT → Dashboard automático | Intermedio | ⏳ Pendiente |
 | 8 | Shopify → Inventario + Alertas | Intermedio | ⏳ Pendiente |
@@ -44,7 +44,7 @@ Combino experiencia en análisis de datos, Python y plataformas low-code para co
 | 19 | Meta (FB/IG/WhatsApp) + Make.com + Gemini AI | Avanzado | ⏳ Pendiente |
 | 20 | GoHighLevel — Plataforma completa (CRM + funnels + IA) | Avanzado | ⏳ Pendiente |
 
-**Progreso:** 4 de 20 proyectos completados.
+**Progreso:** 5 de 20 proyectos completados.
 
 ---
 
@@ -53,9 +53,11 @@ Combino experiencia en análisis de datos, Python y plataformas low-code para co
 - **Orquestación:** n8n, Make.com
 - **Bases de datos:** Airtable, Google Sheets, BigQuery
 - **Comunicación:** Slack, Gmail, Telegram, WhatsApp, SMS
+- **Formularios:** Typeform, Google Forms
+- **Gestión de tareas / CRM:** Asana, Salesforce, GoHighLevel
 - **IA:** OpenAI, Gemini, Pinecone (vector DB)
-- **CRM/E-commerce:** Salesforce, Shopify, GoHighLevel
-- **Conceptos:** Webhooks, OAuth2, APIs REST, expresiones (Luxon), RAG, agentes con IA
+- **E-commerce:** Shopify
+- **Conceptos:** Webhooks, OAuth2, APIs REST, fan-out, expresiones (Luxon), RAG, agentes con IA
 
 ---
 
@@ -68,7 +70,8 @@ automation-portfolio/
 ├── proyecto-01-forms-sheets-email/
 ├── proyecto-02-slack-airtable/
 ├── proyecto-03-email-categorization/
-└── proyecto-04-telegram-sheets/
+├── proyecto-04-telegram-sheets/
+└── proyecto-05-typeform-multidestino/
     ├── README.md
     ├── setup-guide.md
     ├── case-study.md
