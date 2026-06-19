@@ -1,110 +1,105 @@
-# Proyecto 5: Typeform → Asana + Slack + Google Sheets (Fan-out)
+# Project 5: Typeform → Asana + Slack + Google Sheets (Fan-out)
 
-![Status](https://img.shields.io/badge/Status-Completado-success)
-![Dificultad](https://img.shields.io/badge/Dificultad-Intermedia-orange)
-![Tiempo](https://img.shields.io/badge/Tiempo-4%20horas-blue)
-![Herramientas](https://img.shields.io/badge/Herramientas-n8n%20%7C%20Typeform%20%7C%20Asana%20%7C%20Slack%20%7C%20Sheets-purple)
+![Status](https://img.shields.io/badge/Status-Done-success)
+![Difficulty](https://img.shields.io/badge/Difficulty-Intermediate-orange)
+![Time](https://img.shields.io/badge/Time-4%20hours-blue)
+![Tools](https://img.shields.io/badge/Tools-n8n%20%7C%20Typeform%20%7C%20Asana%20%7C%20Slack%20%7C%20Sheets-purple)
 
-## Descripción
+🌐 **English** | [Español](./README.es.md)
 
-Automatización que captura las respuestas de un formulario de Typeform y, con un solo envío, dispara **tres acciones en paralelo**: registra la solicitud en Google Sheets, notifica al equipo en Slack y crea una tarea de seguimiento en Asana.
+## Description
 
-Este proyecto introduce el patrón **fan-out** (un disparador → múltiples acciones simultáneas), fundamental en automatizaciones reales donde un mismo evento debe propagarse a varios sistemas a la vez.
+An automation that captures Typeform responses and, from a single submission, triggers **three actions in parallel**: it logs the request to Google Sheets, notifies the team on Slack, and creates a follow-up task in Asana.
 
-## El patrón Fan-out
+This project introduces the **fan-out** pattern (one trigger → multiple simultaneous actions), fundamental in real-world automations where a single event must propagate to several systems at once.
 
-A diferencia de un flujo lineal (un paso tras otro), aquí el disparador se ramifica en tres caminos independientes que se ejecutan a la vez:
+## The fan-out pattern
+
+Unlike a linear flow (one step after another), here the trigger branches into three independent paths that run at the same time:
 
 ```
                           ┌──────────────────────┐
-                     ┌───▶│ Google Sheets        │  Registro / respaldo
+                     ┌───▶│ Google Sheets        │  Log / backup
                      │    │ (Append Row)         │
 ┌─────────────────┐  │    └──────────────────────┘
 │ Typeform Trigger│  │    ┌──────────────────────┐
-│ (form enviado)  │──┼───▶│ Slack (Send Message) │  Aviso al equipo
+│ (form submitted)│──┼───▶│ Slack (Send Message) │  Team notification
 └─────────────────┘  │    └──────────────────────┘
                      │    ┌──────────────────────┐
-                     └───▶│ Asana (Create Task)  │  Tarea de seguimiento
+                     └───▶│ Asana (Create Task)  │  Follow-up task
                           └──────────────────────┘
 ```
 
-**Ventaja:** las tres acciones son independientes. Si una fallara, las otras dos igual se ejecutan. Y todas parten del mismo dato de origen (el formulario), referenciado con `$('Typeform Trigger')`.
+**Advantage:** the three actions are independent. If one fails, the other two still run. And all of them draw from the same source (the form), referenced with `$('Typeform Trigger')`.
 
-## Casos de uso reales
+## Use cases
 
-- **Captación de leads:** una solicitud web genera registro, aviso al equipo de ventas y tarea de seguimiento, sin trabajo manual.
-- **Onboarding de clientes:** un formulario de alta dispara el archivo del dato, la notificación al equipo y la tarea de configuración.
-- **Gestión de tickets:** una solicitud de soporte se registra, se avisa y se asigna como tarea, todo a la vez.
-- **Inscripciones a eventos:** cada registro se guarda, se notifica y genera una tarea de confirmación.
+- **Lead capture:** a web request generates a log, a sales-team notification, and a follow-up task, with no manual work.
+- **Client onboarding:** an intake form triggers data archiving, team notification, and a setup task.
+- **Ticket management:** a support request is logged, announced, and assigned as a task, all at once.
+- **Event registration:** each signup is saved, announced, and generates a confirmation task.
 
-## Stack técnico
+## Tech stack
 
-| Componente | Herramienta | Función |
-|------------|-------------|---------|
-| Formulario | Typeform | Captura la solicitud |
-| Orquestación | n8n (Cloud) | Recibe y distribuye a 3 destinos |
-| Disparador | Typeform Trigger | Se activa con cada envío del formulario |
-| Registro | Google Sheets | Guarda la solicitud (respaldo consultable) |
-| Notificación | Slack | Avisa al equipo en un canal |
-| Seguimiento | Asana | Crea una tarea en un proyecto |
+| Component | Tool | Role |
+|-----------|------|------|
+| Form | Typeform | Captures the request |
+| Orchestration | n8n (Cloud) | Receives and distributes to 3 destinations |
+| Trigger | Typeform Trigger | Fires on each form submission |
+| Log | Google Sheets | Saves the request (queryable backup) |
+| Notification | Slack | Notifies the team in a channel |
+| Follow-up | Asana | Creates a task in a project |
 
-## Campos del formulario
+## Form fields
 
-| Pregunta (Typeform) | Tipo |
+| Question (Typeform) | Type |
 |---------------------|------|
 | ¿Cuál es tu nombre? | Short Text |
 | ¿Cuál es tu correo electrónico? | Email |
 | Tipo de servicio | Multiple Choice (Consultoría, Automatización, Soporte) |
 | Descripción | Long Text |
 
-## Qué hace cada rama
+## What each branch does
 
-**Rama 1 — Google Sheets (Append Row):** guarda una fila con Fecha, Nombre, Email, Servicio y Descripción. La fecha se genera con `$now` en formato legible.
+**Branch 1 — Google Sheets (Append Row):** saves a row with Date, Name, Email, Service, and Description. The date is generated with `$now` in a readable format.
 
-**Rama 2 — Slack (Send Message):** publica en el canal un mensaje formateado con los datos de la solicitud:
-```
-🔔 Nueva solicitud de servicio
-👤 Nombre: ...
-📧 Email: ...
-🛠️ Servicio: ...
-📝 Descripción: ...
-```
+**Branch 2 — Slack (Send Message):** posts a formatted message to the channel with the request data.
 
-**Rama 3 — Asana (Create Task):** crea una tarea en el proyecto "Solicitudes de Servicio" con título "Nueva solicitud: [Nombre] - [Servicio]" y las notas con email y descripción.
+**Branch 3 — Asana (Create Task):** creates a task in the "Solicitudes de Servicio" project titled "Nueva solicitud: [Name] - [Service]" with email and description in the notes.
 
-## Detalle técnico: referencias al trigger
+## Technical detail: trigger references
 
-Como las tres ramas parten del mismo disparador, todas toman los datos directamente del trigger en lugar del nodo anterior:
+Since all three branches stem from the same trigger, they take their data directly from the trigger rather than the previous node:
 
 ```javascript
 {{ $('Typeform Trigger').item.json["¿Cuál es tu nombre?"] }}
 ```
 
-Los nombres de campo usan sintaxis de corchetes y comillas `["..."]` porque las preguntas de Typeform contienen espacios, acentos y signos de interrogación.
+Field names use bracket-and-quote syntax `["..."]` because the Typeform questions contain spaces, accents, and question marks.
 
-## Conceptos aprendidos
+## Concepts learned
 
-- **Patrón fan-out:** un disparador ramificado en múltiples acciones paralelas.
-- Conexión de **Typeform** vía Personal Access Token con scopes personalizados (mínimo privilegio).
-- Referencias a un nodo específico con `$('Nombre del nodo').item.json[...]`.
-- Manejo de nombres de campo con caracteres especiales (corchetes y comillas).
-- Integración de **Asana** (Create Task) vía OAuth2, con asignación a un proyecto.
-- Reutilización de credenciales entre proyectos (Slack y Google del portafolio).
-- Diagnóstico de errores de Slack: `channel_not_found` (Channel ID incorrecto) y bot removido del canal.
+- **Fan-out pattern:** one trigger branched into multiple parallel actions.
+- Connecting **Typeform** via Personal Access Token with custom scopes (least privilege).
+- Referencing a specific node with `$('Node name').item.json[...]`.
+- Handling field names with special characters (brackets and quotes).
+- Integrating **Asana** (Create Task) via OAuth2, assigned to a project.
+- Reusing credentials across portfolio projects (Slack and Google).
+- Diagnosing Slack errors: `channel_not_found` (wrong Channel ID) and bot removed from channel.
 
-## Cómo implementarlo
+## How to implement
 
-Ver el archivo [`setup-guide.md`](./setup-guide.md) para la guía paso a paso completa.
+See [`setup-guide.md`](./setup-guide.md) for the full step-by-step guide.
 
-## Valor para clientes (Workana)
+## Freelance value
 
-Una automatización fan-out que conecta un formulario con CRM/gestión de tareas y notificaciones tiene un valor estimado de **$400–700 USD** en plataformas freelance. Es muy demandada porque automatiza el proceso completo de captación y asignación de trabajo, eliminando pasos manuales propensos a errores.
+A fan-out automation connecting a form with CRM/task management and notifications is worth an estimated **$400–700 USD** on freelance platforms. It's in high demand because it automates the full capture-and-assignment process, removing error-prone manual steps.
 
-## Capturas de pantalla
+## Screenshots
 
-Ver carpeta [`/assets`](./assets) para las capturas del workflow y las 3 ramas funcionando.
+See the [`/assets`](./assets) folder for screenshots of the workflow and the 3 branches working.
 
-## Contacto
+## Contact
 
 **Veronica Pacheco**
 GitHub: [@verotesla](https://github.com/verotesla)

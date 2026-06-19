@@ -1,106 +1,108 @@
-# Proyecto 3: Email → Categorización Automática + Etiquetas de Gmail
+# Project 3: Email → Auto-Categorization + Gmail Labels
 
-![Status](https://img.shields.io/badge/Status-Completado-success)
-![Dificultad](https://img.shields.io/badge/Dificultad-B%C3%A1sica-green)
-![Tiempo](https://img.shields.io/badge/Tiempo-3%20horas-blue)
-![Herramientas](https://img.shields.io/badge/Herramientas-n8n%20%7C%20Gmail-purple)
+![Status](https://img.shields.io/badge/Status-Done-success)
+![Difficulty](https://img.shields.io/badge/Difficulty-Basic-green)
+![Time](https://img.shields.io/badge/Time-3%20hours-blue)
+![Tools](https://img.shields.io/badge/Tools-n8n%20%7C%20Gmail-purple)
 
-## Descripción
+🌐 **English** | [Español](./README.es.md)
 
-Automatización que clasifica automáticamente los correos entrantes de Gmail y les aplica etiquetas según su contenido. Cuando llega un correo nuevo, el workflow analiza el asunto, identifica a qué categoría pertenece según palabras clave, y aplica la etiqueta correspondiente en Gmail, todo sin intervención manual.
+## Description
 
-Este proyecto demuestra el manejo del nodo de Gmail (lectura y etiquetado), lógica de clasificación condicional con el nodo Switch, y el uso de expresiones para evaluar múltiples criterios de forma eficiente.
+An automation that classifies incoming Gmail messages and applies labels based on their content. When a new email arrives, the workflow analyzes the subject, identifies which category it belongs to based on keywords, and applies the matching Gmail label, all without manual work.
 
-## Casos de uso reales
+This project demonstrates the Gmail node (reading and labeling), conditional classification logic with the Switch node, and using expressions to evaluate multiple criteria efficiently.
 
-- **Freelancers y consultores:** separar automáticamente correos de clientes, facturación y soporte.
-- **Soporte técnico:** identificar y priorizar correos urgentes apenas llegan.
-- **Pequeñas empresas:** mantener la bandeja de entrada organizada sin trabajo manual.
-- **Profesionales con alto volumen de correo:** reducir el tiempo dedicado a clasificar mensajes.
+## Use cases
 
-## Stack técnico
+- **Freelancers and consultants:** automatically separate client, billing, and support emails.
+- **Technical support:** identify and prioritize urgent emails as they arrive.
+- **Small businesses:** keep the inbox organized with no manual effort.
+- **High email volume professionals:** reduce time spent sorting messages.
 
-| Componente | Herramienta | Función |
-|------------|-------------|---------|
-| Origen / destino | Gmail | Recibe los correos y almacena las etiquetas |
-| Orquestación | n8n (Cloud) | Detecta, clasifica y etiqueta |
-| Disparador | Gmail Trigger | Se activa al recibir un correo nuevo |
-| Clasificación | Switch (con expresiones) | Evalúa el asunto contra palabras clave |
-| Acción | Gmail (Add Label) | Aplica la etiqueta correspondiente |
+## Tech stack
 
-## Arquitectura del workflow
+| Component | Tool | Role |
+|-----------|------|------|
+| Source / destination | Gmail | Receives emails and stores labels |
+| Orchestration | n8n (Cloud) | Detects, classifies, and labels |
+| Trigger | Gmail Trigger | Fires when a new email arrives |
+| Classification | Switch (with expressions) | Evaluates the subject against keywords |
+| Action | Gmail (Add Label) | Applies the matching label |
+
+## Workflow architecture
 
 ```
                               ┌──────────────────┐
-                         ┌───▶│ Gmail: 🔴 Urgente │
+                         ┌───▶│ Gmail: 🔴 Urgent  │
                          │    └──────────────────┘
                          │    ┌──────────────────┐
-                         ├───▶│ Gmail: 💼 Clientes│
+                         ├───▶│ Gmail: 💼 Clients │
 ┌──────────────┐  ┌──────┴─┐  └──────────────────┘
 │ Gmail Trigger│─▶│ Switch │  ┌──────────────────────┐
-│ (nuevo email)│  │(5 rutas)├─▶│ Gmail: 🧾 Facturación │
+│ (new email)  │  │(5 rules)├─▶│ Gmail: 🧾 Billing     │
 └──────────────┘  └──────┬─┘  └──────────────────────┘
                          │    ┌──────────────────┐
-                         ├───▶│ Gmail: 🤝 Soporte │
+                         ├───▶│ Gmail: 🤝 Support │
                          │    └──────────────────┘
                          │    ┌─────────────────────┐
                          └───▶│ Gmail: 📰 Newsletters│
                               └─────────────────────┘
 ```
 
-## Categorías y palabras clave
+## Categories and keywords
 
-| Etiqueta | Palabras clave detectadas |
-|----------|---------------------------|
-| 🔴 Urgente | urgente, urgent, asap, error, no funciona |
-| 💼 Clientes | propuesta, cotización, presupuesto, proposal, quote, contratar |
-| 🧾 Facturación | factura, invoice, pago, payment, recibo, transferencia, cobro |
-| 🤝 Soporte | ayuda, help, soporte, support, duda, consulta, how to |
+| Label | Keywords detected |
+|-------|-------------------|
+| 🔴 Urgent | urgente, urgent, asap, error, no funciona |
+| 💼 Clients | propuesta, cotización, presupuesto, proposal, quote, contratar |
+| 🧾 Billing | factura, invoice, pago, payment, recibo, transferencia, cobro |
+| 🤝 Support | ayuda, help, soporte, support, duda, consulta, how to |
 | 📰 Newsletters | newsletter, boletín, promoción, unsubscribe, oferta, descuento |
 
-## Lógica de clasificación
+## Classification logic
 
-En lugar de una sola palabra por categoría, cada ruta del Switch usa una **expresión** que evalúa una lista completa de palabras clave de una sola vez:
+Instead of a single word per category, each Switch route uses an **expression** that evaluates a whole list of keywords at once:
 
 ```javascript
 {{ ["urgente","urgent","asap","error","no funciona"]
    .some(p => ($json.Subject || "").toLowerCase().includes(p)) }}
 ```
 
-**Qué hace esta expresión:**
-- Toma la lista de palabras clave de la categoría.
-- `.some(...)` devuelve verdadero si **al menos una** palabra coincide.
-- `.toLowerCase()` convierte el asunto a minúsculas, de modo que la detección **ignora mayúsculas/minúsculas** ("URGENTE", "Urgente" y "urgente" se tratan igual).
-- `($json.Subject || "")` evita errores si un correo llega sin asunto.
-- `.includes(p)` comprueba si el asunto contiene la palabra.
+What this expression does:
+- Takes the category's keyword list.
+- `.some(...)` returns true if **at least one** keyword matches.
+- `.toLowerCase()` makes detection **case-insensitive** ("URGENTE", "Urgente", "urgente" are treated the same).
+- `($json.Subject || "")` avoids errors if an email arrives with no subject.
+- `.includes(p)` checks whether the subject contains the word.
 
-El Switch está configurado con **"Send data to all matching outputs"** activado, lo que permite que un correo reciba **varias etiquetas** si aplica a más de una categoría (por ejemplo, "Factura urgente" → 🧾 Facturación + 🔴 Urgente).
+The Switch is configured with **"Send data to all matching outputs"**, allowing an email to receive **multiple labels** if it fits more than one category (e.g., "Urgent invoice" → 🧾 Billing + 🔴 Urgent).
 
-## Conceptos aprendidos
+## Concepts learned
 
-- Configuración del **Gmail Trigger** y autenticación OAuth2 con Google.
-- Uso del nodo **Switch** en modo "Rules" para enrutamiento condicional.
-- Escritura de **expresiones** en n8n (JavaScript) para evaluar múltiples criterios.
-- Manejo de mayúsculas/minúsculas con `.toLowerCase()`.
-- Aplicación de etiquetas a mensajes con el nodo **Gmail → Add Label**.
-- Diferencia entre **ejecutar manualmente** y **publicar/activar** un workflow (clave para que reaccione a eventos reales).
-- Salidas múltiples del Switch ("Send data to all matching outputs").
+- Configuring the **Gmail Trigger** and OAuth2 authentication with Google.
+- Using the **Switch** node in "Rules" mode for conditional routing.
+- Writing **expressions** in n8n (JavaScript) to evaluate multiple criteria.
+- Case handling with `.toLowerCase()`.
+- Applying labels with the **Gmail → Add Label** node.
+- The difference between **running manually** and **publishing/activating** a workflow (key for it to react to real events).
+- Multiple Switch outputs ("Send data to all matching outputs").
 
-## Cómo implementarlo
+## How to implement
 
-Ver el archivo [`setup-guide.md`](./setup-guide.md) para la guía paso a paso completa.
+See [`setup-guide.md`](./setup-guide.md) for the full step-by-step guide.
 
-## Valor para clientes (Workana)
+## Freelance value
 
-Una automatización de organización de correo de este tipo tiene un valor estimado de **$200–400 USD** en plataformas freelance. Es un servicio muy demandado por profesionales y pymes que reciben alto volumen de correo y necesitan mantener orden sin esfuerzo manual.
+An email-organization automation like this is worth an estimated **$200–400 USD** on freelance platforms. It's in high demand among professionals and SMBs who receive high email volume and need to stay organized with no manual effort.
 
-> 💡 Evolución: este proyecto clasifica por reglas de palabras clave. Una versión avanzada con clasificación mediante IA (que entiende el contenido y la intención del correo) está planificada como Proyecto 10 del portafolio.
+> 💡 Evolution: this project classifies by keyword rules. An advanced version with AI classification (understanding the email's content and intent) is planned as Project 10 of the portfolio.
 
-## Capturas de pantalla
+## Screenshots
 
-Ver carpeta [`/assets`](./assets) para las capturas del workflow funcionando.
+See the [`/assets`](./assets) folder for screenshots of the working workflow.
 
-## Contacto
+## Contact
 
 **Veronica Pacheco**
 GitHub: [@verotesla](https://github.com/verotesla)

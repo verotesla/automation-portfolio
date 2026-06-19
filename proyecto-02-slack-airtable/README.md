@@ -1,86 +1,88 @@
-# Proyecto 2: Slack → Airtable + Reacción Automática
+# Project 2: Slack → Airtable + Automatic Reaction
 
-![Status](https://img.shields.io/badge/Status-Funcional%20(con%20limitaci%C3%B3n%20documentada)-yellow)
-![Dificultad](https://img.shields.io/badge/Dificultad-Intermedia-orange)
-![Tiempo](https://img.shields.io/badge/Tiempo-4%20horas-blue)
-![Herramientas](https://img.shields.io/badge/Herramientas-n8n%20%7C%20Slack%20%7C%20Airtable-purple)
+![Status](https://img.shields.io/badge/Status-Functional%20(documented%20limitation)-yellow)
+![Difficulty](https://img.shields.io/badge/Difficulty-Intermediate-orange)
+![Time](https://img.shields.io/badge/Time-4%20hours-blue)
+![Tools](https://img.shields.io/badge/Tools-n8n%20%7C%20Slack%20%7C%20Airtable-purple)
 
-## Descripción
+🌐 **English** | [Español](./README.es.md)
 
-Automatización que captura mensajes enviados en un canal de Slack y los almacena automáticamente en una base de datos de Airtable, con una reacción automática de confirmación en el mensaje original.
+## Description
 
-Este proyecto demuestra la integración entre una herramienta de comunicación (Slack), una herramienta de orquestación de workflows (n8n) y una base de datos colaborativa (Airtable), conectadas mediante webhooks y autenticación OAuth.
+An automation that captures messages posted in a Slack channel and automatically stores them in an Airtable database, with an automatic confirmation reaction on the original message.
 
-## Casos de uso reales
+This project demonstrates integration between a communication tool (Slack), a workflow orchestration tool (n8n), and a collaborative database (Airtable), connected via webhooks and OAuth authentication.
 
-- **Soporte al cliente:** capturar consultas de un canal de Slack en una base de datos para darles seguimiento.
-- **Gestión de leads:** registrar solicitudes de un canal de ventas en un CRM ligero.
-- **Tickets internos:** centralizar peticiones de equipos en una tabla consultable.
-- **Registro de incidencias:** documentar reportes que llegan por Slack en un repositorio estructurado.
+## Use cases
 
-## Stack técnico
+- **Customer support:** capture inquiries from a Slack channel into a database for follow-up.
+- **Lead management:** log requests from a sales channel into a lightweight CRM.
+- **Internal tickets:** centralize team requests in a queryable table.
+- **Incident logging:** document reports arriving via Slack in a structured repository.
 
-| Componente | Herramienta | Función |
-|------------|-------------|---------|
-| Origen de datos | Slack | Canal donde se publican los mensajes |
-| Orquestación | n8n (Cloud) | Recibe, procesa y enruta los datos |
-| Recepción | Webhook | Punto de entrada de los eventos de Slack |
-| Almacenamiento | Airtable | Base de datos donde se guardan los registros |
-| Confirmación | Slack Reaction | Reacción automática en el mensaje original |
+## Tech stack
 
-## Arquitectura del workflow
+| Component | Tool | Role |
+|-----------|------|------|
+| Data source | Slack | Channel where messages are posted |
+| Orchestration | n8n (Cloud) | Receives, processes, and routes the data |
+| Reception | Webhook | Entry point for Slack events |
+| Storage | Airtable | Database where records are saved |
+| Confirmation | Slack Reaction | Automatic reaction on the original message |
+
+## Workflow architecture
 
 ```
-┌──────────┐     ┌─────────────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Webhook  │────▶│ Respond to Webhook  │────▶│ Create a record │────▶│ Add reaction │
-│ (Slack)  │     │   (verificación)    │     │   (Airtable)    │     │   (Slack)    │
-└──────────┘     └─────────────────────┘     └─────────────────┘     └──────────────┘
-   Recibe            Confirma a Slack            Guarda datos          Reacciona ✅
+┌──────────┐   ┌─────────────────────┐   ┌─────────────────┐   ┌──────────────┐
+│ Webhook  │──▶│ Respond to Webhook  │──▶│ Create a record │──▶│ Add reaction │
+│ (Slack)  │   │   (verification)    │   │   (Airtable)    │   │   (Slack)    │
+└──────────┘   └─────────────────────┘   └─────────────────┘   └──────────────┘
+   Receives        Confirms to Slack         Saves data          Reacts ✅
 ```
 
-## Estado de los componentes
+## Component status
 
-| Componente | Estado | Notas |
-|------------|--------|-------|
-| Webhook (recepción) | ✅ Funcional | Recibe y procesa los datos correctamente |
-| Respond to Webhook | ✅ Funcional | Responde a Slack con el primer item recibido |
-| Create a record (Airtable) | ✅ Funcional y probado | Guarda Author, Message, Timestamp y Channel |
-| Add reaction (Slack) | ⏳ Pendiente de datos en vivo | Requiere un mensaje real para reaccionar (ver Limitaciones) |
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Webhook (reception) | ✅ Functional | Receives and processes data correctly |
+| Respond to Webhook | ✅ Functional | Responds to Slack with the first item received |
+| Create a record (Airtable) | ✅ Functional and tested | Saves Author, Message, Timestamp, and Channel |
+| Add reaction (Slack) | ⏳ Pending live data | Requires a real message to react to (see Limitations) |
 
-## Conceptos aprendidos
+## Concepts learned
 
-- Configuración de **webhooks** como punto de entrada de un workflow.
-- Manejo de **OAuth2** y **scopes** (permisos) en una app de Slack.
-- Uso del nodo **Respond to Webhook** para verificación de endpoints.
-- **Mapeo de campos** (field mapping) entre el payload de origen y las columnas de destino.
-- Creación y configuración de **tokens de acceso personal** en Airtable.
-- Diferencia entre **Test URL** y **Production URL** en n8n.
-- Estructura del payload de eventos de Slack (`text`, `user`, `ts`, `channel`).
+- Configuring **webhooks** as a workflow entry point.
+- Handling **OAuth2** and **scopes** (permissions) in a Slack app.
+- Using the **Respond to Webhook** node for endpoint verification.
+- **Field mapping** between the source payload and destination columns.
+- Creating and configuring **personal access tokens** in Airtable.
+- The difference between **Test URL** and **Production URL** in n8n.
+- The structure of Slack event payloads (`text`, `user`, `ts`, `channel`).
 
-## Limitaciones conocidas
+## Known limitations
 
-La reacción automática de Slack (último nodo) requiere un **mensaje real** publicado en el canal para funcionar. Durante el desarrollo se utilizaron datos de prueba (*mock data*) para validar el flujo, lo cual permite confirmar que la lógica Webhook → Airtable funciona al 100%, pero impide ejecutar la reacción porque el *timestamp* de prueba no corresponde a ningún mensaje existente en Slack.
+The automatic Slack reaction (final node) requires a **real message** posted in the channel to work. During development, mock data was used to validate the flow, which confirms the Webhook → Airtable logic works 100%, but prevents the reaction from running because the test timestamp doesn't correspond to any existing Slack message.
 
-Para activar la reacción en producción se requiere:
-1. **Publicar el workflow** en n8n (estado activo) para que la *Production URL* responda.
-2. **Verificar el Event Subscription** de Slack contra esa URL activa.
-3. Enviar un mensaje real al canal, que generará un *timestamp* válido para la reacción.
+To enable the reaction in production:
+1. **Publish the workflow** in n8n (active state) so the Production URL responds.
+2. **Verify the Slack Event Subscription** against that active URL.
+3. Send a real message to the channel, which generates a valid timestamp for the reaction.
 
-Esta limitación es propia del entorno de desarrollo y no representa un error del diseño del workflow.
+This limitation is specific to the development environment and is not a flaw in the workflow design.
 
-## Cómo implementarlo
+## How to implement
 
-Ver el archivo [`setup-guide.md`](./setup-guide.md) para la guía paso a paso completa.
+See [`setup-guide.md`](./setup-guide.md) for the full step-by-step guide.
 
-## Valor para clientes (Workana)
+## Freelance value
 
-Proyectos de este tipo (integración Slack + base de datos) tienen un valor estimado de **$250–500 USD** en plataformas freelance, dependiendo del número de campos, transformaciones de datos y reglas de negocio requeridas.
+Projects of this type (Slack + database integration) are worth an estimated **$250–500 USD** on freelance platforms, depending on the number of fields, data transformations, and business rules required.
 
-## Capturas de pantalla
+## Screenshots
 
-Ver carpeta [`/assets`](./assets) para las capturas del workflow funcionando.
+See the [`/assets`](./assets) folder for screenshots of the working workflow.
 
-## Contacto
+## Contact
 
 **Veronica Pacheco**
 GitHub: [@verotesla](https://github.com/verotesla)

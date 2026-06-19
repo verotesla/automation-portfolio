@@ -1,26 +1,28 @@
-# Proyecto 6: Sincronización Bidireccional Google Contacts ↔ Airtable
+# Project 6: Two-Way Sync Google Contacts ↔ Airtable
 
-![Status](https://img.shields.io/badge/Status-Completado-success)
-![Dificultad](https://img.shields.io/badge/Dificultad-Intermedia-orange)
-![Tiempo](https://img.shields.io/badge/Tiempo-5%20horas-blue)
-![Herramientas](https://img.shields.io/badge/Herramientas-n8n%20%7C%20Google%20Contacts%20%7C%20Airtable-purple)
+![Status](https://img.shields.io/badge/Status-Done-success)
+![Difficulty](https://img.shields.io/badge/Difficulty-Intermediate-orange)
+![Time](https://img.shields.io/badge/Time-5%20hours-blue)
+![Tools](https://img.shields.io/badge/Tools-n8n%20%7C%20Google%20Contacts%20%7C%20Airtable-purple)
 
-## Descripción
+🌐 **English** | [Español](./README.es.md)
 
-Sincronización bidireccional entre Google Contacts y Airtable: los contactos fluyen en **ambos sentidos** de forma automática y segura. Los contactos de Google se reflejan en Airtable (sin duplicar), y los contactos nuevos creados en Airtable se crean en Google Contacts (sin generar bucles infinitos).
+## Description
 
-Este proyecto resuelve dos de los problemas más difíciles de la sincronización de datos: la **idempotencia** (poder ejecutar el flujo muchas veces sin crear duplicados) y la **prevención de bucles** (evitar que un cambio en un sistema rebote infinitamente entre ambos).
+A two-way synchronization between Google Contacts and Airtable: contacts flow in **both directions** automatically and safely. Google contacts are reflected in Airtable (without duplicating), and new contacts created in Airtable are created in Google Contacts (without generating infinite loops).
 
-## Arquitectura: dos workflows coordinados
+This project solves two of the hardest problems in data synchronization: **idempotency** (running the flow many times without creating duplicates) and **loop prevention** (stopping a change in one system from bouncing infinitely between both).
 
-La sincronización bidireccional se implementó con **dos workflows separados**, una decisión de diseño deliberada: workflows independientes son más seguros, más fáciles de mantener y permiten apagar una dirección sin afectar la otra.
+## Architecture: two coordinated workflows
+
+The two-way sync was implemented with **two separate workflows**, a deliberate design choice: independent workflows are safer, easier to maintain, and let you turn off one direction without affecting the other.
 
 ### Workflow 1 — Google Contacts → Airtable
 
 ```
 ┌──────────┐   ┌───────────────────┐   ┌────────────────────┐
 │ Schedule │──▶│ Get many contacts │──▶│ Airtable (Upsert)  │
-│ Trigger  │   │ (Google People)   │   │ match por Email    │
+│ Trigger  │   │ (Google People)   │   │ match by Email     │
 └──────────┘   └───────────────────┘   └────────────────────┘
 ```
 
@@ -29,85 +31,85 @@ La sincronización bidireccional se implementó con **dos workflows separados**,
 ```
 ┌──────────┐   ┌──────────────────────┐   ┌──────────────┐   ┌─────────────────────┐
 │ Schedule │──▶│ Airtable Search      │──▶│ Google       │──▶│ Airtable Update     │
-│ Trigger  │   │ (no sincronizados)   │   │ Create       │   │ (marcar ✅)         │
+│ Trigger  │   │ (not synced)         │   │ Create       │   │ (mark ✅)           │
 └──────────┘   └──────────────────────┘   └──────────────┘   └─────────────────────┘
 ```
 
-## Puntos técnicos destacados
+## Key technical highlights
 
-### 1. Upsert idempotente (Google → Airtable)
+### 1. Idempotent upsert (Google → Airtable)
 
-En lugar de "crear siempre" (que generaría duplicados en cada ejecución), se usa **Upsert** (update + insert) con el **Email** como columna de coincidencia. Si el contacto ya existe en Airtable, se actualiza; si no, se crea.
+Instead of "always create" (which would duplicate on every run), it uses **Upsert** (update + insert) with **Email** as the matching column. If the contact already exists in Airtable, it's updated; if not, it's created.
 
-**Resultado:** el workflow se puede ejecutar infinitas veces y los datos quedan limpios, sin duplicados. Esto se llama **idempotencia** y es una propiedad fundamental de una sincronización confiable.
+**Result:** the workflow can run infinitely and the data stays clean, with no duplicates. This is called **idempotency** and is a fundamental property of reliable synchronization.
 
-### 2. Prevención de bucles (Airtable → Google)
+### 2. Loop prevention (Airtable → Google)
 
-El mayor riesgo de una sincronización bidireccional es el **bucle infinito**: un cambio en A actualiza B, que vuelve a disparar A, y así sin fin. Esto se resolvió con una **columna de control** en Airtable: `Sincronizado a Google` (checkbox).
+The biggest risk of two-way sync is the **infinite loop**: a change in A updates B, which re-triggers A, and so on forever. This was solved with a **control column** in Airtable: `Sincronizado a Google` (checkbox).
 
-- El Workflow 2 solo procesa contactos donde la casilla está **desmarcada** (filtro `NOT({Sincronizado a Google})`).
-- Tras crear el contacto en Google, **marca la casilla** ✅.
-- En la siguiente ejecución, ese contacto ya no se procesa.
+- Workflow 2 only processes contacts where the checkbox is **unchecked** (filter `NOT({Sincronizado a Google})`).
+- After creating the contact in Google, it **checks the box** ✅.
+- On the next run, that contact is no longer processed.
 
-**Resultado:** cada contacto se sincroniza una sola vez. No hay bucles. El sistema es seguro para ejecutarse de forma continua.
+**Result:** each contact syncs exactly once. No loops. The system is safe to run continuously.
 
-### 3. Manejo de datos anidados de una API real
+### 3. Handling nested data from a real API
 
-Google People API devuelve datos con estructura anidada e irregular. Se usaron expresiones con acceso seguro (`?.`) para extraerlos sin romper el flujo cuando un campo falta:
+The Google People API returns data with a nested, irregular structure. Safe-access expressions (`?.`) were used to extract it without breaking the flow when a field is missing:
 
 ```javascript
-{{ $json.names?.displayName }}              // nombre
-{{ $json.phoneNumbers?.mobile?.[0] }}       // teléfono
-{{ Object.values($json.emailAddresses || {})[0]?.[0] }}  // email (estructura irregular)
+{{ $json.names?.displayName }}              // name
+{{ $json.phoneNumbers?.mobile?.[0] }}       // phone
+{{ Object.values($json.emailAddresses || {})[0]?.[0] }}  // email (irregular structure)
 ```
 
-### 4. Filtrado de casos especiales
+### 4. Filtering special cases
 
-Muchos contactos no tienen email. Como el Upsert usa el email como identificador, se agregó un nodo **Filter** que deja pasar solo los contactos con email, evitando el error "Record must include columns to merge on".
+Many contacts have no email. Since the Upsert uses email as the identifier, a **Filter** node was added to pass only contacts with email, avoiding the "Record must include columns to merge on" error.
 
-## Casos de uso reales
+## Use cases
 
-- **Equipos de ventas:** capturan leads en Airtable y los quieren disponibles en el teléfono (Google Contacts) para llamar/escribir.
-- **Gestión centralizada de contactos:** mantener una base maestra en Airtable sincronizada con la agenda personal.
-- **Migración y respaldo:** reflejar contactos entre sistemas sin perder datos ni duplicar.
+- **Sales teams:** capture leads in Airtable and want them available on their phone (Google Contacts) to call/message.
+- **Centralized contact management:** keep a master base in Airtable synced with the personal address book.
+- **Migration and backup:** mirror contacts between systems without losing data or duplicating.
 
-## Stack técnico
+## Tech stack
 
-| Componente | Herramienta | Función |
-|------------|-------------|---------|
-| Disparador | Schedule Trigger | Ejecuta la sincronización periódicamente |
-| Origen/destino A | Google Contacts (People API) | Agenda de contactos |
-| Origen/destino B | Airtable | Base de datos de contactos |
-| Orquestación | n8n (Cloud) | Coordina ambas direcciones |
-| Control anti-bucle | Columna checkbox en Airtable | Evita reprocesar contactos |
+| Component | Tool | Role |
+|-----------|------|------|
+| Trigger | Schedule Trigger | Runs the sync periodically |
+| Source/destination A | Google Contacts (People API) | Contact address book |
+| Source/destination B | Airtable | Contact database |
+| Orchestration | n8n (Cloud) | Coordinates both directions |
+| Loop control | Airtable checkbox column | Prevents reprocessing contacts |
 
-## Conceptos aprendidos
+## Concepts learned
 
-- **Patrón Schedule + Get/Search:** sincronización por sondeo periódico (polling) cuando no hay trigger de evento.
-- **Upsert e idempotencia:** crear o actualizar sin duplicar, usando una columna de coincidencia.
-- **Prevención de bucles** con una columna de control de estado.
-- **Acceso seguro a datos anidados** con `?.` y manejo de estructuras irregulares de APIs.
-- **Filtros (nodo Filter)** para manejar casos especiales (contactos sin email).
-- **Filter By Formula de Airtable** (`NOT({campo})`) para consultas selectivas.
-- **Arquitectura de dos workflows** para una sincronización bidireccional segura.
+- **Schedule + Get/Search pattern:** sync by periodic polling when there's no event trigger.
+- **Upsert and idempotency:** create or update without duplicating, using a matching column.
+- **Loop prevention** with a state control column.
+- **Safe access to nested data** with `?.` and handling irregular API structures.
+- **Filters (Filter node)** to handle special cases (contacts without email).
+- **Airtable Filter By Formula** (`NOT({field})`) for selective queries.
+- **Two-workflow architecture** for safe two-way synchronization.
 
-## Limitaciones y alcance
+## Limitations and scope
 
-Esta implementación cubre la creación de contactos nuevos en ambas direcciones de forma segura. **No** incluye la resolución de conflictos de edición simultánea (cuando el mismo contacto se modifica en ambos sistemas a la vez), que es un problema avanzado de "última escritura gana" o "merge de campos". El diseño actual prioriza la seguridad (sin bucles, sin duplicados) sobre la sincronización de ediciones en tiempo real.
+This implementation covers creating new contacts in both directions safely. It does **not** include resolving simultaneous-edit conflicts (when the same contact is modified in both systems at once), which is an advanced "last-write-wins" or "field-merge" problem. The current design prioritizes safety (no loops, no duplicates) over real-time edit synchronization.
 
-## Cómo implementarlo
+## How to implement
 
-Ver el archivo [`setup-guide.md`](./setup-guide.md) para la guía paso a paso completa de ambos workflows.
+See [`setup-guide.md`](./setup-guide.md) for the full step-by-step guide for both workflows.
 
-## Valor para clientes (Workana)
+## Freelance value
 
-Una sincronización bidireccional entre sistemas tiene un valor estimado de **$500–900 USD** en plataformas freelance, por su complejidad técnica (manejo de duplicados, bucles y datos anidados). Es un servicio que pocos saben implementar correctamente, lo que lo hace especialmente valioso.
+A two-way synchronization between systems is worth an estimated **$500–900 USD** on freelance platforms, due to its technical complexity (handling duplicates, loops, and nested data). It's a service few know how to implement correctly, which makes it especially valuable.
 
-## Capturas de pantalla
+## Screenshots
 
-Ver carpeta [`/assets`](./assets) para las capturas de ambos workflows funcionando.
+See the [`/assets`](./assets) folder for screenshots of both workflows working.
 
-## Contacto
+## Contact
 
 **Veronica Pacheco**
 GitHub: [@verotesla](https://github.com/verotesla)
