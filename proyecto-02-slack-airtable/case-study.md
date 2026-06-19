@@ -1,54 +1,54 @@
-# Caso de Estudio — Slack → Airtable + Reacción Automática
+# Case Study — Slack → Airtable + Automatic Reaction
 
-## El cliente (ejemplo ilustrativo)
+## The client (illustrative example)
 
-**Empresa:** TechSupport Solutions
-**Sector:** Soporte técnico para pymes
-**Tamaño:** 12 empleados
-**Contacto:** Laura Méndez, Coordinadora de Soporte
+**Company:** TechSupport Solutions
+**Industry:** Technical support for SMBs
+**Size:** 12 employees
+**Contact:** Laura Méndez, Support Coordinator
 
-## El problema
+## The problem
 
-El equipo de soporte de TechSupport Solutions recibía consultas de clientes a través de un canal de Slack. El proceso era completamente manual:
+TechSupport Solutions' support team received customer inquiries through a Slack channel. The process was entirely manual:
 
-- Un agente leía cada mensaje y lo copiaba a una hoja de cálculo.
-- No había forma rápida de saber qué consultas ya habían sido registradas.
-- Se perdían mensajes en horas de alto volumen.
-- No existía un registro consultable para análisis posteriores.
+- An agent read each message and copied it into a spreadsheet.
+- There was no quick way to know which inquiries had already been logged.
+- Messages were lost during high-volume hours.
+- There was no queryable record for later analysis.
 
-Laura estimaba que el equipo dedicaba **alrededor de 5 horas semanales** solo a copiar y organizar consultas manualmente.
+Laura estimated the team spent **around 5 hours per week** just copying and organizing inquiries manually.
 
-## La solución propuesta
+## The proposed solution
 
-Un workflow automatizado que:
+An automated workflow that:
 
-1. **Detecta** cada mensaje publicado en el canal de Slack de consultas.
-2. **Guarda** automáticamente el autor, el mensaje, la fecha y el canal en una base de datos de Airtable.
-3. **Reacciona** con un ✅ en el mensaje original para indicar visualmente que ya fue registrado.
+1. **Detects** every message posted in the Slack inquiries channel.
+2. **Saves** the author, message, date, and channel to an Airtable database automatically.
+3. **Reacts** with a ✅ on the original message to visually mark it as logged.
 
-## Implementación
+## Implementation
 
-Se construyó el workflow en n8n con cuatro pasos: recepción del mensaje (Webhook), confirmación a Slack (Respond to Webhook), almacenamiento (Airtable) y confirmación visual (reacción de Slack).
+Built in n8n with four steps: message reception (Webhook), confirmation to Slack (Respond to Webhook), storage (Airtable), and visual confirmation (Slack reaction).
 
-La integración Slack → Airtable quedó **completamente funcional y probada**: cada mensaje se guarda con sus cuatro campos estructurados (autor, contenido, timestamp, canal), listo para filtrar, ordenar y analizar.
+The Slack → Airtable integration is fully functional and tested: each message is saved with its four structured fields (author, content, timestamp, channel), ready to filter, sort, and analyze.
 
-## Resultados esperados
+## Expected results
 
-| Métrica | Antes | Después |
-|---------|-------|---------|
-| Tiempo de registro por consulta | ~2 min (manual) | Instantáneo (automático) |
-| Consultas perdidas | Frecuentes | Cero |
-| Registro consultable | No | Sí (Airtable) |
-| Tiempo semanal en registro manual | ~5 horas | ~0 horas |
+| Metric | Before | After |
+|--------|--------|-------|
+| Logging time per inquiry | ~2 min (manual) | Instant (automatic) |
+| Lost inquiries | Frequent | Zero |
+| Queryable record | No | Yes (Airtable) |
+| Weekly manual logging time | ~5 hours | ~0 hours |
 
-## Valor del proyecto
+## Project value
 
-Para un cliente real, una automatización de este tipo se cotiza entre **$250 y $500 USD**, según la complejidad de los campos y las reglas de negocio. El retorno de inversión es claro: recuperar ~5 horas semanales de trabajo manual justifica el costo en pocas semanas.
+For a real client, an automation like this is priced between **$250 and $500 USD**, depending on the complexity of the fields and business rules. The ROI is clear: recovering ~5 hours of manual work per week justifies the cost within a few weeks.
 
-## Aprendizaje técnico clave
+## Key technical takeaway
 
-Este proyecto consolidó el manejo de webhooks, autenticación OAuth, scopes de permisos y mapeo de campos entre sistemas: una base que se reutiliza en prácticamente cualquier integración entre aplicaciones.
+This project consolidated webhooks, OAuth authentication, permission scopes, and field mapping between systems — a foundation reused in virtually any application-to-application integration.
 
 ---
 
-*Nota: Este caso de estudio es ilustrativo, con fines de portafolio. Los datos del cliente son ficticios.*
+*Note: This case study is illustrative, for portfolio purposes. Client data is fictional.*

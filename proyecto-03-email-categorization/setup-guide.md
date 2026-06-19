@@ -1,136 +1,134 @@
-# Guía de Configuración — Proyecto 3: Email → Categorización + Etiquetas Gmail
+# Setup Guide — Project 3: Email → Categorization + Gmail Labels
 
-Esta guía documenta el proceso completo para construir el workflow de clasificación automática de correos, incluyendo los errores comunes y cómo resolverlos.
-
----
-
-## Requisitos previos
-
-- Cuenta en [n8n.cloud](https://n8n.cloud) (trial de 14 días suficiente)
-- Una cuenta de Gmail
-- Tiempo estimado: 2–3 horas
+This guide documents the full process of building the email auto-classification workflow, including common errors and how to resolve them.
 
 ---
 
-## Parte 1 — Crear las etiquetas en Gmail
+## Prerequisites
 
-Las etiquetas deben existir antes de automatizar. En Gmail (web):
+- [n8n.cloud](https://n8n.cloud) account
+- A Gmail account
+- Estimated time: 2–3 hours
 
-1. Barra lateral izquierda → bajar hasta **"Más"** → **"Crear etiqueta nueva"**.
-2. Crear estas 5 etiquetas:
+---
+
+## Part 1 — Create the Gmail labels
+
+Labels must exist before automating. In Gmail (web):
+
+1. Left sidebar → scroll to **"More"** → **"Create new label"**.
+2. Create these 5 labels:
    - `🔴 Urgente`
    - `💼 Clientes`
    - `🧾 Facturación`
    - `🤝 Soporte`
    - `📰 Newsletters`
 
-> 💡 Anota exactamente cómo las escribiste (con emoji incluido), porque en n8n deberás referirlas igual.
+> 💡 Note exactly how you wrote them (emoji included), because you'll reference them the same way in n8n.
 
 ---
 
-## Parte 2 — Crear el workflow en n8n
+## Part 2 — Create the workflow in n8n
 
-1. Crear un nuevo workflow.
-2. Nombrarlo: `Email Categorization`.
-
----
-
-## Parte 3 — Nodo 1: Gmail Trigger
-
-1. **Add first step** → buscar `Gmail` → sección **Triggers** → **"On message received"**.
-2. **Credential:** crear una nueva (Gmail OAuth2 API) → **"Connect my account"** / "Sign in with Google".
-3. Autorizar con la cuenta de Gmail y aceptar los permisos.
-4. **Poll Times:** dejar el valor por defecto (cada minuto).
-
-> ⚠️ **Error común de OAuth (`access_denied`):** si al autorizar la ventana se cierra y aparece "Insufficient parameters for OAuth2 callback" o `access_denied`, suele deberse a tener varias cuentas de Google activas en el navegador. **Solución:** usar una **ventana de incógnito**, iniciar sesión solo en n8n y autorizar con una única cuenta. También verificar que las ventanas emergentes estén permitidas.
+1. Create a new workflow named `Email Categorization`.
 
 ---
 
-## Parte 4 — Nodo 2: Switch (clasificador)
+## Part 3 — Node 1: Gmail Trigger
 
-1. Del Gmail Trigger, agregar nodo **Switch**.
+1. **Add first step** → search `Gmail` → **Triggers** section → **"On message received"**.
+2. **Credential:** create a new one (Gmail OAuth2 API) → **"Connect my account"** / "Sign in with Google".
+3. Authorize with the Gmail account and accept the permissions.
+4. **Poll Times:** leave the default (every minute).
+
+> ⚠️ **Common OAuth error (`access_denied`):** if the window closes during authorization and shows "Insufficient parameters for OAuth2 callback" or `access_denied`, it's usually due to multiple active Google accounts in the browser. **Fix:** use an **incognito window**, sign in to n8n only, and authorize with a single account. Also check that pop-ups are allowed.
+
+---
+
+## Part 4 — Node 2: Switch (classifier)
+
+1. From the Gmail Trigger, add a **Switch** node.
 2. **Mode:** Rules.
-3. Crear **5 Routing Rules**, una por categoría.
+3. Create **5 Routing Rules**, one per category.
 
-### Configuración de cada regla (versión mejorada)
+### Configuring each rule
 
-Para cada regla:
+For each rule:
+1. **Operator:** change from "contains" to **Boolean → is true**.
+2. **Value field:** set to **Expression** mode and write the category's expression.
 
-1. **Operador:** cambiar de "contains" a **Boolean → is true**.
-2. **Campo de valor:** poner en modo **Expression** y escribir la expresión de la categoría.
-
-**Regla 1 — Urgente:**
+**Rule 1 — Urgent:**
 ```javascript
 {{ ["urgente","urgent","asap","error","no funciona"].some(p => ($json.Subject || "").toLowerCase().includes(p)) }}
 ```
 
-**Regla 2 — Clientes:**
+**Rule 2 — Clients:**
 ```javascript
 {{ ["propuesta","cotización","cotizacion","presupuesto","proposal","quote","contratar"].some(p => ($json.Subject || "").toLowerCase().includes(p)) }}
 ```
 
-**Regla 3 — Facturación:**
+**Rule 3 — Billing:**
 ```javascript
 {{ ["factura","invoice","pago","payment","recibo","transferencia","cobro"].some(p => ($json.Subject || "").toLowerCase().includes(p)) }}
 ```
 
-**Regla 4 — Soporte:**
+**Rule 4 — Support:**
 ```javascript
 {{ ["ayuda","help","soporte","support","duda","consulta","how to"].some(p => ($json.Subject || "").toLowerCase().includes(p)) }}
 ```
 
-**Regla 5 — Newsletters:**
+**Rule 5 — Newsletters:**
 ```javascript
 {{ ["newsletter","boletín","boletin","promoción","promocion","unsubscribe","oferta","descuento"].some(p => ($json.Subject || "").toLowerCase().includes(p)) }}
 ```
 
-### Opciones del Switch
+### Switch options
 
-Bajar a **Options → Add option** y activar:
-- **"Send data to all matching outputs":** ON (permite que un correo reciba varias etiquetas).
-- *(Opcional)* **"Fallback Output":** para enrutar correos que no coincidan con ninguna categoría.
+Go to **Options → Add option** and enable:
+- **"Send data to all matching outputs":** ON (lets an email receive multiple labels).
+- *(Optional)* **"Fallback Output":** to route emails that match no category.
 
-> Nota: con las expresiones que usan `.toLowerCase()`, la opción "Ignore Case" ya no es estrictamente necesaria, porque la conversión a minúsculas se hace dentro de la propia expresión.
+> Note: with expressions using `.toLowerCase()`, the "Ignore Case" option isn't strictly necessary, since the lowercase conversion happens inside the expression itself.
 
 ---
 
-## Parte 5 — Nodos 3 a 7: Aplicar etiquetas (Gmail)
+## Part 5 — Nodes 3 to 7: Apply labels (Gmail)
 
-Desde **cada salida** del Switch, agregar un nodo Gmail:
+From **each Switch output**, add a Gmail node:
 
-1. Del punto de salida correspondiente, arrastrar → buscar `Gmail` → **acción "Add Label to Message"**.
+1. From the matching output, drag → search `Gmail` → **"Add Label to Message"** action.
 2. **Resource:** Message.
 3. **Operation:** Add Label.
-4. **Message ID:** seleccionar el `id` del mensaje que viene del trigger → `{{ $json.id }}`.
-   - ⚠️ Usar el `id` del mensaje, NO `historyId`, NO `threadId`, NI los IDs internos de n8n (`workflow.id`, `$execution.id`).
-5. **Label:** seleccionar la etiqueta correspondiente de la lista (🔴 Urgente, 💼 Clientes, etc.).
+4. **Message ID:** select the message `id` coming from the trigger → `{{ $json.id }}`.
+   - ⚠️ Use the message `id`, NOT `historyId`, NOT `threadId`, and NOT n8n's internal IDs (`workflow.id`, `$execution.id`).
+5. **Label:** select the matching label from the list (🔴 Urgente, 💼 Clientes, etc.).
 
-Repetir para las 5 categorías.
-
----
-
-## Parte 6 — Publicar y probar
-
-1. **Publicar/activar** el workflow (botón "Publish"). **Esto es imprescindible:** un workflow solo reacciona a correos nuevos cuando está activo. Si solo se ejecuta manualmente, procesa datos viejos cargados, no los correos que lleguen después.
-2. Enviarse correos de prueba con distintas palabras clave en el asunto ("urgente", "invoice", "ayuda", "oferta"...).
-3. Verificar en Gmail que cada correo reciba su etiqueta correspondiente.
+Repeat for all 5 categories.
 
 ---
 
-## Errores encontrados y soluciones
+## Part 6 — Publish and test
 
-| Error / Situación | Causa | Solución |
-|-------------------|-------|----------|
-| `access_denied` al conectar Gmail | Varias cuentas de Google activas | Usar ventana de incógnito con una sola cuenta |
-| El correo llega pero no se etiqueta | Workflow no estaba publicado/activo | Publicar el workflow; solo así escucha correos nuevos |
-| Detecta "urgente" pero no "URGENTE" | Comparación sensible a mayúsculas | Usar `.toLowerCase()` en la expresión |
-| No se puede agregar segunda condición (OR) en una regla | Esta versión del Switch permite una condición por regla | Usar expresión con `.some()` para evaluar varias palabras |
-| Confusión con el campo Message ID | Existen varios "id" en los datos | Usar el `id` del mensaje (`{{ $json.id }}`), no historyId ni threadId |
+1. **Publish/activate** the workflow. **This is essential:** a workflow only reacts to new emails when active. If only run manually, it processes old loaded data, not emails that arrive afterward.
+2. Send yourself test emails with different keywords in the subject ("urgente", "invoice", "ayuda", "oferta"...).
+3. Verify in Gmail that each email receives its matching label.
 
 ---
 
-## Posible mejora futura
+## Errors and fixes
 
-- **Clasificación con IA** (Proyecto 10): en lugar de palabras clave, usar un modelo que entienda el contenido y la intención del correo, capturando casos que las reglas no detectan.
-- **Búsqueda también en el cuerpo del correo**, no solo en el asunto.
-- **Categoría "Sin clasificar"** vía Fallback Output, para revisar correos que ninguna regla capturó.
+| Error / Situation | Cause | Fix |
+|-------------------|-------|-----|
+| `access_denied` connecting Gmail | Multiple active Google accounts | Use an incognito window with a single account |
+| Email arrives but isn't labeled | Workflow wasn't published/active | Publish the workflow; only then does it listen for new emails |
+| Detects "urgente" but not "URGENTE" | Case-sensitive comparison | Use `.toLowerCase()` in the expression |
+| Can't add a second condition (OR) in a rule | This Switch version allows one condition per rule | Use a `.some()` expression to evaluate several words |
+| Confusion with the Message ID field | Several "id" values exist in the data | Use the message `id` (`{{ $json.id }}`), not historyId or threadId |
+
+---
+
+## Possible future improvements
+
+- **AI classification** (Project 10): instead of keywords, use a model that understands the email's content and intent, catching cases rules miss.
+- **Search the email body too**, not just the subject.
+- **"Unclassified" category** via Fallback Output, to review emails no rule caught.

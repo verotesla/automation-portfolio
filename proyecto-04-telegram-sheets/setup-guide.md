@@ -1,54 +1,53 @@
-# Guía de Configuración — Proyecto 4: Bot de Telegram → Sheets + Respuestas
+# Setup Guide — Project 4: Telegram Bot → Sheets + Replies
 
-Esta guía documenta el proceso completo para construir un bot de Telegram que registra mensajes en Google Sheets y responde según palabras clave.
-
----
-
-## Requisitos previos
-
-- Cuenta en [n8n.cloud](https://n8n.cloud) (trial de 14 días suficiente)
-- Cuenta de Telegram
-- Cuenta de Google (para Sheets)
-- Tiempo estimado: 2–3 horas
+This guide documents the full process of building a Telegram bot that logs messages to Google Sheets and replies based on keywords.
 
 ---
 
-## Parte 1 — Crear el bot de Telegram
+## Prerequisites
 
-1. En Telegram, buscar **BotFather** (bot oficial con verificación azul).
-2. Iniciar con `/start` y luego enviar `/newbot`.
-3. Asignar:
-   - **Nombre** del bot (libre, ej. "Vero Automation Bot").
-   - **Username** (debe terminar en `bot`, ej. `vero_automation_bot`).
-4. BotFather entrega un **token** (ej. `7123456789:AAH...`).
-5. Copiar y guardar el token de forma segura.
-
-> ⚠️ Nunca subir el token a GitHub ni compartirlo públicamente.
+- [n8n.cloud](https://n8n.cloud) account
+- Telegram account
+- Google account (for Sheets)
+- Estimated time: 2–3 hours
 
 ---
 
-## Parte 2 — Crear el workflow y el Telegram Trigger
+## Part 1 — Create the Telegram bot
 
-1. En n8n, crear un workflow: `Telegram to Sheets`.
-2. **Add first step** → `Telegram` → sección Triggers → **"On message"**.
-3. **Credential:** crear nueva → pegar el token de BotFather → guardar.
+1. In Telegram, search for **BotFather** (official bot with blue checkmark).
+2. Start with `/start`, then send `/newbot`.
+3. Set:
+   - **Name** (free, e.g., "Vero Automation Bot").
+   - **Username** (must end in `bot`, e.g., `vero_automation_bot`).
+4. BotFather returns a **token** (e.g., `7123456789:AAH...`).
+5. Copy and store the token securely.
 
-> 💡 La conexión de Telegram es sencilla: solo el token, sin OAuth ni ventanas emergentes.
-
-### Probar el trigger
-
-1. **Execute step** en el trigger (queda escuchando).
-2. En Telegram, buscar el bot, darle **Start** y enviarle un mensaje.
-3. El mensaje debe aparecer capturado en n8n.
-
-> ⚠️ Un bot no puede recibir mensajes hasta que el usuario inicie la conversación con **Start**.
+> ⚠️ Never push the token to GitHub or share it publicly.
 
 ---
 
-## Parte 3 — Crear la hoja de Google Sheets
+## Part 2 — Create the workflow and Telegram Trigger
 
-1. Crear una hoja: `Telegram Mensajes`.
-2. En la fila 1, crear los encabezados (columnas):
+1. In n8n, create a workflow: `Telegram to Sheets`.
+2. **Add first step** → `Telegram` → Triggers section → **"On message"**.
+3. **Credential:** create new → paste the BotFather token → save.
+
+> 💡 Telegram's connection is simple: just the token, no OAuth or pop-ups.
+
+### Test the trigger
+1. **Execute step** on the trigger (it starts listening).
+2. In Telegram, find the bot, press **Start**, and send it a message.
+3. The message should appear captured in n8n.
+
+> ⚠️ A bot can't receive messages until the user starts the conversation with **Start**.
+
+---
+
+## Part 3 — Create the Google Sheet
+
+1. Create a sheet: `Telegram Mensajes`.
+2. In row 1, create the headers (columns):
 
 | A | B | C | D |
 |---|---|---|---|
@@ -56,116 +55,115 @@ Esta guía documenta el proceso completo para construir un bot de Telegram que r
 
 ---
 
-## Parte 4 — Nodo Google Sheets (guardar)
+## Part 4 — Google Sheets node (save)
 
-1. Agregar nodo **Google Sheets → Append Row**.
-2. **Credential:** la cuenta de Google (reutilizable del Proyecto 1).
-3. **Document:** seleccionar `Telegram Mensajes`.
-4. **Sheet:** la pestaña (Hoja 1 / Sheet1).
-5. **Mapear los campos:**
+1. Add a **Google Sheets → Append Row** node.
+2. **Credential:** the Google account (reusable from Project 1).
+3. **Document:** select `Telegram Mensajes`.
+4. **Sheet:** the tab (Sheet1).
+5. **Map the fields:**
 
-| Columna | Expresión |
-|---------|-----------|
+| Column | Expression |
+|--------|-----------|
 | Fecha | `{{ DateTime.fromSeconds($json.message.date).toFormat('dd/MM/yyyy HH:mm:ss') }}` |
 | Usuario | `{{ $json.message.from.first_name }}` |
 | Mensaje | `{{ $json.message.text }}` |
 | ChatID | `{{ $json.message.chat.id }}` |
 
-> La expresión de Fecha convierte el timestamp Unix de Telegram a formato legible usando Luxon (`DateTime`).
+> The Date expression converts Telegram's Unix timestamp to a readable format using Luxon (`DateTime`).
 
 ---
 
-## Parte 5 — Nodo Switch (clasificador de respuestas)
+## Part 5 — Switch node (reply classifier)
 
-1. Agregar **Switch** después de Google Sheets.
+1. Add a **Switch** after Google Sheets.
 2. **Mode:** Rules.
-3. Crear 5 Routing Rules. En cada una: operador **Boolean → is true**, campo en modo **Expression**.
+3. Create 5 Routing Rules. In each: operator **Boolean → is true**, value field in **Expression** mode.
 
-> ⚠️ **Error común:** olvidar cambiar el operador a **Boolean / is true**. Si se deja en otro operador, la regla no evalúa correctamente y el mensaje cae por una ruta equivocada o por el fallback.
+> ⚠️ **Common mistake:** forgetting to change the operator to **Boolean / is true**. Left on another operator, the rule won't evaluate correctly and the message falls through the wrong route or the fallback.
 
-> ⚠️ **Importante:** como el Switch recibe los datos **después** de Google Sheets, las expresiones evalúan el campo `Mensaje` (nombre de la columna), NO `message.text`.
+> ⚠️ **Important:** since the Switch receives data **after** Google Sheets, the expressions evaluate the `Mensaje` field (the column name), NOT `message.text`.
 
-**Regla 1 — Saludo:**
+**Rule 1 — Greeting:**
 ```javascript
 {{ ["hola","buenas","hi","hello"].some(p => ($json.Mensaje || "").toLowerCase().includes(p)) }}
 ```
 
-**Regla 2 — Precio:**
+**Rule 2 — Price:**
 ```javascript
 {{ ["precio","costo","cuánto","cuanto","cotización","cotizacion"].some(p => ($json.Mensaje || "").toLowerCase().includes(p)) }}
 ```
 
-**Regla 3 — Horario:**
+**Rule 3 — Hours:**
 ```javascript
 {{ ["horario","abierto","atención","atencion","hora"].some(p => ($json.Mensaje || "").toLowerCase().includes(p)) }}
 ```
 
-**Regla 4 — Ayuda:**
+**Rule 4 — Help:**
 ```javascript
 {{ ["ayuda","soporte","problema","help"].some(p => ($json.Mensaje || "").toLowerCase().includes(p)) }}
 ```
 
-**Regla 5 — Ubicación:**
+**Rule 5 — Location:**
 ```javascript
 {{ ["ubicación","ubicacion","dónde","donde","dirección","direccion"].some(p => ($json.Mensaje || "").toLowerCase().includes(p)) }}
 ```
 
-4. **Options → Add option → Fallback Output:** activarlo (crea una salida extra para mensajes sin coincidencia).
+4. **Options → Add option → Fallback Output:** enable it (creates an extra output for non-matching messages).
 
-> Nota: NO activar "Send data to all matching outputs" aquí, porque se quiere UNA respuesta por mensaje.
+> Note: do NOT enable "Send data to all matching outputs" here, because we want ONE reply per message.
 
 ---
 
-## Parte 6 — Nodos de respuesta (Telegram Send Message)
+## Part 6 — Reply nodes (Telegram Send Message)
 
-Desde **cada salida** del Switch (incluido el Fallback), agregar un nodo **Telegram → Send Message**:
+From **each Switch output** (including the Fallback), add a **Telegram → Send Message** node:
 
-1. **Credential:** el bot.
+1. **Credential:** the bot.
 2. **Chat ID:** `{{ $('Telegram Trigger').item.json.message.chat.id }}`
-3. **Text:** el mensaje correspondiente a esa categoría.
-4. Desactivar la firma: **Add Field → Append n8n Attribution → OFF**.
+3. **Text:** the message for that category.
+4. Disable the signature: **Add Field → Append n8n Attribution → OFF**.
 
-| Salida | Categoría | Texto sugerido |
-|--------|-----------|----------------|
-| 0 | Saludo | ¡Hola! 👋 Gracias por escribir. ¿En qué puedo ayudarte? |
-| 1 | Precio | 💰 Con gusto te comparto información de precios. Un asesor te contactará pronto. |
-| 2 | Horario | 🕐 Nuestro horario es de Lunes a Viernes, 9:00 a 18:00. |
-| 3 | Ayuda | 🛠️ Tu mensaje fue registrado y te atenderemos pronto. |
-| 4 | Ubicación | 📍 Estamos ubicados en [dirección]. ¡Te esperamos! |
-| Fallback | Por defecto | ✅ ¡Mensaje recibido y guardado! Gracias por escribir. |
+| Output | Category | Suggested text |
+|--------|----------|----------------|
+| 0 | Greeting | ¡Hola! 👋 Gracias por escribir. ¿En qué puedo ayudarte? |
+| 1 | Price | 💰 Con gusto te comparto información de precios. Un asesor te contactará pronto. |
+| 2 | Hours | 🕐 Nuestro horario es de Lunes a Viernes, 9:00 a 18:00. |
+| 3 | Help | 🛠️ Tu mensaje fue registrado y te atenderemos pronto. |
+| 4 | Location | 📍 Estamos ubicados en [dirección]. ¡Te esperamos! |
+| Fallback | Default | ✅ ¡Mensaje recibido y guardado! Gracias por escribir. |
 
-> 💡 Truco: copiar (Ctrl+C / Ctrl+V) un nodo de Telegram ya configurado y solo cambiar el texto, para no reconfigurar Chat ID y firma cada vez.
-
----
-
-## Parte 7 — Publicar y probar
-
-1. **Publicar/activar** el workflow.
-2. Escribir distintos mensajes al bot desde Telegram y verificar:
-   - Que cada mensaje se guarde en Sheets (con fecha legible).
-   - Que el bot responda según la palabra clave.
-   - Que un mensaje sin palabra clave reciba la respuesta por defecto.
-
-> ⚠️ **Limitación de Telegram:** no se puede escuchar mensajes de prueba ("Execute") y de producción (publicado) al mismo tiempo. Si aparece ese aviso, despublicar para probar manualmente, o probar directamente en producción escribiendo al bot.
+> 💡 Tip: copy (Ctrl+C / Ctrl+V) an already-configured Telegram node and just change the text, to avoid reconfiguring Chat ID and signature each time.
 
 ---
 
-## Errores encontrados y soluciones
+## Part 7 — Publish and test
 
-| Error / Situación | Causa | Solución |
-|-------------------|-------|----------|
-| El bot no recibe mensajes en la prueba | No se inició conversación con el bot | Dar **Start** al bot primero |
-| Aviso "can't listen for test executions..." | Telegram no permite test + producción a la vez | Despublicar para probar, o probar en producción |
-| El bot responde siempre lo mismo | Las reglas buscaban `message.text` pero tras Sheets el campo es `Mensaje` | Usar `$json.Mensaje` en las expresiones |
-| Una regla no clasifica | Operador no estaba en Boolean / is true | Cambiar el operador a **Boolean → is true** |
-| Aparece "This message was sent with n8n" | Firma automática activada | Desactivar **Append n8n Attribution** |
-| Fecha ilegible (número largo) | Telegram entrega timestamp Unix | Convertir con `DateTime.fromSeconds(...).toFormat(...)` |
+1. **Publish/activate** the workflow.
+2. Send different messages to the bot from Telegram and verify:
+   - Each message is saved to Sheets (with readable date).
+   - The bot replies according to the keyword.
+   - A message with no keyword gets the default reply.
+
+> ⚠️ **Telegram limitation:** you can't listen for test ("Execute") and production (published) messages at the same time. If that notice appears, unpublish to test manually, or test directly in production by messaging the bot.
 
 ---
 
-## Posibles mejoras futuras
+## Errors and fixes
 
-- **Respuestas con IA** (proyectos 13/16): entender lenguaje natural en lugar de palabras clave.
-- **Buscar también en mayúsculas/variantes** ya cubierto con `.toLowerCase()`.
-- **Menú con botones** de Telegram (inline keyboard) para opciones rápidas.
-- **Notificación a un segundo canal** (ej. avisar a un administrador cuando llega cierto tipo de mensaje).
+| Error / Situation | Cause | Fix |
+|-------------------|-------|-----|
+| Bot doesn't receive messages in test | Conversation not started | Press **Start** on the bot first |
+| "can't listen for test executions..." notice | Telegram doesn't allow test + production at once | Unpublish to test, or test in production |
+| Bot always replies the same | Rules searched `message.text` but after Sheets the field is `Mensaje` | Use `$json.Mensaje` in the expressions |
+| A rule doesn't classify | Operator wasn't Boolean / is true | Change the operator to **Boolean → is true** |
+| "This message was sent with n8n" appears | Auto-signature enabled | Disable **Append n8n Attribution** |
+| Unreadable date (long number) | Telegram sends a Unix timestamp | Convert with `DateTime.fromSeconds(...).toFormat(...)` |
+
+---
+
+## Possible future improvements
+
+- **AI replies** (projects 13/16): understand natural language instead of keywords.
+- **Telegram inline keyboard** (button menu) for quick options.
+- **Notify a second channel** (e.g., alert an admin when a certain message type arrives).

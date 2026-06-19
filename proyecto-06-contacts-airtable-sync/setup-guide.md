@@ -1,146 +1,146 @@
-# Guía de Configuración — Proyecto 6: Sincronización Bidireccional Contacts ↔ Airtable
+# Setup Guide — Project 6: Two-Way Sync Contacts ↔ Airtable
 
-Esta guía documenta cómo construir una sincronización bidireccional segura entre Google Contacts y Airtable, con dos workflows.
-
----
-
-## Requisitos previos
-
-- Cuenta en [n8n.cloud](https://n8n.cloud)
-- Cuenta de Google con contactos
-- Cuenta de Airtable
-- Tiempo estimado: 4–5 horas
+This guide documents how to build a safe two-way synchronization between Google Contacts and Airtable, using two workflows.
 
 ---
 
-## Parte 1 — Tabla en Airtable
+## Prerequisites
 
-Crear una tabla `Contactos` con estos campos:
+- [n8n.cloud](https://n8n.cloud) account
+- Google account with contacts
+- Airtable account
+- Estimated time: 4–5 hours
 
-| Campo | Tipo |
+---
+
+## Part 1 — Airtable table
+
+Create a table `Contactos` with these fields:
+
+| Field | Type |
 |-------|------|
 | Nombre | Single line text |
-| Email | Email o Single line text |
-| Teléfono | Phone o Single line text |
+| Email | Email or Single line text |
+| Teléfono | Phone or Single line text |
 | Empresa | Single line text |
 | Última actualización | Single line text |
 | Sincronizado a Google | **Checkbox** |
 
-> El campo "Última actualización" se deja como texto y se formatea desde n8n con Luxon (`$now.toFormat(...)`), para tener control total sobre el formato.
+> The "Última actualización" field is kept as text and formatted from n8n with Luxon (`$now.toFormat(...)`), for full control over the format.
 
 ---
 
 ## WORKFLOW 1 — Google Contacts → Airtable
 
-### Paso 1: Schedule Trigger
-Crear workflow `Google Contacts to Airtable`. Agregar **Schedule Trigger** (cada hora, o más seguido para pruebas).
+### Step 1: Schedule Trigger
+Create workflow `Google Contacts to Airtable`. Add **Schedule Trigger** (hourly, or more frequent for testing).
 
-### Paso 2: Get many contacts
-1. Agregar **Google Contacts → Get Many**.
-2. **Credential:** OAuth2 (requiere permiso de Contacts; si ya hay credencial de Google, puede necesitar reautorización).
-3. **Return All:** activado.
-4. **Fields:** seleccionar Names, Email Addresses, Phone Numbers, Organizations.
+### Step 2: Get many contacts
+1. Add **Google Contacts → Get Many**.
+2. **Credential:** OAuth2 (requires Contacts permission; an existing Google credential may need re-authorization).
+3. **Return All:** enabled.
+4. **Fields:** select Names, Email Addresses, Phone Numbers, Organizations.
 
-> ⚠️ Error común: `personFields mask is required`. Se resuelve seleccionando los Fields. Google obliga a especificar qué datos traer.
+> ⚠️ Common error: `personFields mask is required`. Fixed by selecting the Fields. Google requires specifying which data to fetch.
 
-### Paso 3: Filter (solo contactos con email)
-1. Agregar nodo **Filter** entre Get contacts y Airtable.
-2. Condición: el email NO está vacío.
-   - Valor: `{{ Object.values($json.emailAddresses || {})[0]?.[0] }}`
-   - Operador: **is not empty**
+### Step 3: Filter (only contacts with email)
+1. Add a **Filter** node between Get contacts and Airtable.
+2. Condition: email is NOT empty.
+   - Value: `{{ Object.values($json.emailAddresses || {})[0]?.[0] }}`
+   - Operator: **is not empty**
 
-> ⚠️ Sin este filtro, los contactos sin email causan el error "Record must include columns to merge on".
+> ⚠️ Without this filter, contacts without email cause the "Record must include columns to merge on" error.
 
-### Paso 4: Airtable Upsert
-1. Agregar **Airtable → Create or Update (Upsert)**.
-2. **Credential:** Airtable (dar acceso a la base Contactos al reconectar).
-3. **Base:** Contactos. **Table:** la tabla.
+### Step 4: Airtable Upsert
+1. Add **Airtable → Create or Update (Upsert)**.
+2. **Credential:** Airtable (grant access to the Contactos base when reconnecting).
+3. **Base:** Contactos. **Table:** the table.
 4. **Columns to match on:** **Email**.
-5. Mapear (según la estructura real de Google People):
+5. Map (per the real Google People structure):
 
-| Columna | Expresión |
-|---------|-----------|
+| Column | Expression |
+|--------|-----------|
 | Email | `{{ Object.values($json.emailAddresses || {})[0]?.[0] }}` |
 | Nombre | `{{ $json.names?.displayName }}` |
 | Teléfono | `{{ $json.phoneNumbers?.mobile?.[0] }}` |
 | Empresa | `{{ $json.organizations?.name }}` |
 | Última actualización | `{{ $now.toFormat('dd/MM/yyyy HH:mm:ss') }}` |
 
-> 💡 Importante: inspeccionar el JSON crudo de Get contacts antes de mapear. La estructura real puede diferir de lo esperado (ej. `names` es objeto directo, no lista).
+> 💡 Important: inspect the raw JSON of Get contacts before mapping. The real structure may differ from what's expected (e.g., `names` is a direct object, not a list).
 
-6. Ejecutar y verificar en Airtable. Ejecutar de nuevo: NO debe duplicar (upsert idempotente).
+6. Execute and verify in Airtable. Run again: it must NOT duplicate (idempotent upsert).
 
 ---
 
-## Preparación del anti-bucle (una sola vez)
+## Anti-loop preparation (one time)
 
-Antes de construir el Workflow 2, marcar como **Sincronizado a Google ✅** todos los contactos que YA vinieron de Google (los que están en Airtable). Así solo quedan "no sincronizados" los que nacen en Airtable.
+Before building Workflow 2, mark as **Sincronizado a Google ✅** all contacts that already came from Google (those in Airtable). This leaves only the Airtable-born contacts as "not synced".
 
-Esto se hace una vez, manualmente en Airtable, para establecer un punto de partida limpio.
+This is done once, manually in Airtable, to set a clean starting point.
 
 ---
 
 ## WORKFLOW 2 — Airtable → Google Contacts
 
-### Paso 1: Schedule Trigger
-Crear workflow separado `Airtable to Google Contacts`. Agregar **Schedule Trigger**.
+### Step 1: Schedule Trigger
+Create a separate workflow `Airtable to Google Contacts`. Add **Schedule Trigger**.
 
-### Paso 2: Airtable Search (no sincronizados)
-1. Agregar **Airtable → Search**.
-2. **Base:** Contactos. **Table:** la tabla.
-3. **Return All:** activado.
+### Step 2: Airtable Search (not synced)
+1. Add **Airtable → Search**.
+2. **Base:** Contactos. **Table:** the table.
+3. **Return All:** enabled.
 4. **Filter By Formula:**
    ```
    NOT({Sincronizado a Google})
    ```
 
-> Esta fórmula (sintaxis de Airtable) trae solo los registros con la casilla desmarcada. Es el corazón del anti-bucle.
+> This formula (Airtable syntax) returns only records with the checkbox unchecked. It's the heart of the anti-loop.
 
-### Paso 3: Google Contacts Create
-1. Agregar **Google Contacts → Create**.
+### Step 3: Google Contacts Create
+1. Add **Google Contacts → Create**.
 2. **Given Name:** `{{ $json.fields.Nombre }}`
-3. En **Additional Fields**:
-   - **Email → Value:** `{{ $json.fields.Email }}` (Type: Home, valor fijo)
-   - **Phone → Value:** `{{ $json.fields.Teléfono }}` (Type: Mobile, valor fijo)
+3. In **Additional Fields**:
+   - **Email → Value:** `{{ $json.fields.Email }}` (Type: Home, fixed value)
+   - **Phone → Value:** `{{ $json.fields.Teléfono }}` (Type: Mobile, fixed value)
 
-> ⚠️ Error común: poner la misma expresión en Type y Value. El **Type** es la etiqueta (home/mobile) y va fijo o vacío; el **Value** es el dato real. El email va solo en Email→Value; el teléfono solo en Phone→Value.
+> ⚠️ Common error: putting the same expression in Type and Value. The **Type** is the label (home/mobile) and stays fixed or empty; the **Value** is the actual data. Email goes only in Email→Value; phone only in Phone→Value.
 
-### Paso 4: Airtable Update (marcar como sincronizado)
-1. Agregar **Airtable → Update**.
-2. **Base:** Contactos. **Table:** la tabla.
+### Step 4: Airtable Update (mark as synced)
+1. Add **Airtable → Update**.
+2. **Base:** Contactos. **Table:** the table.
 3. **Columns to match on:** id.
 4. **id (using to match):** `{{ $('Search records').item.json.id }}`
-5. **Sincronizado a Google:** activar (true).
+5. **Sincronizado a Google:** enable (true).
 
-> Esto cierra el anti-bucle: marca el contacto recién creado para que no se vuelva a procesar.
-
----
-
-## Pruebas finales
-
-1. Ejecutar Workflow 2 → crea en Google los no sincronizados y los marca.
-2. Ejecutar de nuevo → "No output data" (no hay nada sin sincronizar). ✅ Anti-bucle confirmado.
-3. Crear un contacto nuevo en Airtable (sin marcar) → ejecutar → se crea en Google y se marca.
-4. Verificar en Google Contacts que el contacto aparece completo (nombre, email, teléfono).
+> This closes the anti-loop: it marks the just-created contact so it won't be reprocessed.
 
 ---
 
-## Errores encontrados y soluciones
+## Final tests
 
-| Error / Situación | Causa | Solución |
-|-------------------|-------|----------|
-| `personFields mask is required` | No se especificaron los campos | Seleccionar Fields (Names, Emails, Phones, Orgs) |
-| Base "Contactos" no aparece | La credencial no tenía acceso a esa base | Reconectar Airtable y agregar la base |
-| Expresiones devuelven `undefined` | Estructura real distinta a la esperada | Inspeccionar el JSON crudo y ajustar las rutas |
-| "Record must include columns to merge on" | Contactos sin email + match por email | Agregar Filter "email is not empty" |
-| Search trae todos los registros | Ningún contacto estaba marcado | Marcar manualmente los de Google una vez |
-| Email/teléfono mal en Google | Expresión en Type en vez de Value | Email→Value y Phone→Value; Type fijo |
+1. Run Workflow 2 → creates the not-synced contacts in Google and marks them.
+2. Run again → "No output data" (nothing left to sync). ✅ Anti-loop confirmed.
+3. Create a new contact in Airtable (unchecked) → run → it's created in Google and marked.
+4. Verify in Google Contacts that the contact appears complete (name, email, phone).
 
 ---
 
-## Posibles mejoras futuras
+## Errors and fixes
 
-- **Resolución de conflictos:** manejar ediciones simultáneas (última escritura gana o merge por campo).
-- **Actualización bidireccional de existentes** (no solo creación de nuevos).
-- **Borrado sincronizado:** reflejar eliminaciones entre sistemas.
-- **Separar nombre y apellido** (Given Name / Family Name) en lugar de un solo campo.
+| Error / Situation | Cause | Fix |
+|-------------------|-------|-----|
+| `personFields mask is required` | Fields not specified | Select Fields (Names, Emails, Phones, Orgs) |
+| "Contactos" base doesn't appear | Credential lacked access | Reconnect Airtable and add the base |
+| Expressions return `undefined` | Real structure differs from expected | Inspect raw JSON and adjust the paths |
+| "Record must include columns to merge on" | Contacts without email + match by email | Add Filter "email is not empty" |
+| Search returns all records | No contact was marked | Mark the Google ones manually once |
+| Email/phone wrong in Google | Expression in Type instead of Value | Email→Value and Phone→Value; Type fixed |
+
+---
+
+## Possible future improvements
+
+- **Conflict resolution:** handle simultaneous edits (last-write-wins or field merge).
+- **Two-way update of existing contacts** (not just creating new ones).
+- **Synced deletion:** reflect removals between systems.
+- **Split name and surname** (Given Name / Family Name) instead of a single field.

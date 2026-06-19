@@ -1,55 +1,55 @@
-# Caso de Estudio — Email → Categorización Automática + Etiquetas Gmail
+# Case Study — Email → Auto-Categorization + Gmail Labels
 
-## El cliente (ejemplo ilustrativo)
+## The client (illustrative example)
 
-**Profesional:** Carlos Ramírez
-**Actividad:** Consultor freelance de marketing digital
-**Situación:** Trabaja solo y gestiona toda su comunicación por correo
+**Professional:** Carlos Ramírez
+**Role:** Freelance digital marketing consultant
+**Situation:** Works solo and manages all communication by email
 
-## El problema
+## The problem
 
-Carlos recibe entre 40 y 60 correos diarios, mezclados sin ningún orden en su bandeja de entrada: propuestas de clientes potenciales, facturas de proveedores, solicitudes de soporte de clientes actuales, newsletters a las que está suscrito y correos urgentes que requieren respuesta inmediata.
+Carlos receives 40–60 emails a day, mixed together with no order in his inbox: proposals from prospects, supplier invoices, support requests from current clients, newsletters he's subscribed to, and urgent emails needing immediate response.
 
-El problema principal no era el volumen, sino la **falta de priorización**:
+The main problem wasn't the volume, but the **lack of prioritization**:
 
-- Los correos urgentes se perdían entre newsletters y promociones.
-- Tardaba en encontrar correos de facturación al final del mes.
-- No distinguía rápido entre un cliente nuevo (propuesta) y uno existente (soporte).
-- Dedicaba tiempo cada mañana solo a "ordenar" mentalmente su bandeja.
+- Urgent emails got lost among newsletters and promotions.
+- Finding billing emails at month-end took time.
+- He couldn't quickly tell a new client (proposal) from an existing one (support).
+- He spent time each morning just mentally "sorting" his inbox.
 
-## La solución propuesta
+## The proposed solution
 
-Un workflow que clasifica automáticamente cada correo entrante y le aplica una etiqueta de color según su tipo, apenas llega:
+A workflow that automatically classifies each incoming email and applies a color label by type, as soon as it arrives:
 
-- 🔴 **Urgente** — correos que requieren atención inmediata
-- 💼 **Clientes** — propuestas y prospectos
-- 🧾 **Facturación** — pagos, facturas y recibos
-- 🤝 **Soporte** — solicitudes de ayuda de clientes actuales
-- 📰 **Newsletters** — boletines y promociones
+- 🔴 **Urgent** — emails needing immediate attention
+- 💼 **Clients** — proposals and prospects
+- 🧾 **Billing** — payments, invoices, and receipts
+- 🤝 **Support** — help requests from current clients
+- 📰 **Newsletters** — bulletins and promotions
 
-## Implementación
+## Implementation
 
-Se construyó el workflow en n8n con un disparador de Gmail que detecta cada correo nuevo, un nodo Switch que evalúa el asunto contra listas de palabras clave (en español e inglés), y cinco nodos de Gmail que aplican la etiqueta correspondiente.
+Built in n8n with a Gmail trigger that detects each new email, a Switch node that evaluates the subject against keyword lists (in Spanish and English), and five Gmail nodes that apply the matching label.
 
-La clasificación se diseñó para ser **flexible**: detecta múltiples palabras por categoría, ignora mayúsculas y minúsculas, y permite que un mismo correo reciba varias etiquetas cuando aplica (por ejemplo, una factura urgente).
+The classification was designed to be flexible: it detects multiple words per category, ignores case, and lets a single email receive multiple labels when applicable (e.g., an urgent invoice).
 
-## Resultados esperados
+## Expected results
 
-| Métrica | Antes | Después |
-|---------|-------|---------|
-| Tiempo diario ordenando correo | ~20 min | ~0 min |
-| Correos urgentes detectados al instante | No | Sí (etiqueta 🔴) |
-| Bandeja organizada por tipo | No | Sí (automático) |
-| Esfuerzo manual de clasificación | Diario | Ninguno |
+| Metric | Before | After |
+|--------|--------|-------|
+| Daily time sorting email | ~20 min | ~0 min |
+| Urgent emails flagged instantly | No | Yes (🔴 label) |
+| Inbox organized by type | No | Yes (automatic) |
+| Manual classification effort | Daily | None |
 
-## Valor del proyecto
+## Project value
 
-Una automatización de organización de correo se cotiza entre **$200 y $400 USD** en plataformas freelance. Es un servicio de alta demanda porque resuelve un dolor universal (la bandeja desordenada) con una inversión baja y un beneficio diario tangible.
+An email-organization automation is priced between **$200 and $400 USD** on freelance platforms. It's in high demand because it solves a universal pain (the messy inbox) with a low investment and a tangible daily benefit.
 
-## Aprendizaje técnico clave
+## Key technical takeaway
 
-Este proyecto consolidó el manejo del nodo Gmail (lectura y etiquetado), la lógica condicional con el nodo Switch y, sobre todo, el uso de **expresiones** para evaluar múltiples criterios de forma eficiente, en lugar de crear decenas de condiciones manuales. También reforzó una lección fundamental de n8n: un workflow debe estar **publicado y activo** para reaccionar a eventos en tiempo real.
+This project consolidated the Gmail node (reading and labeling), conditional logic with the Switch node, and above all the use of **expressions** to evaluate multiple criteria efficiently, instead of creating dozens of manual conditions. It also reinforced a fundamental n8n lesson: a workflow must be **published and active** to react to events in real time.
 
 ---
 
-*Nota: Este caso de estudio es ilustrativo, con fines de portafolio. Los datos del cliente son ficticios.*
+*Note: This case study is illustrative, for portfolio purposes. Client data is fictional.*

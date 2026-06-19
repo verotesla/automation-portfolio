@@ -1,57 +1,57 @@
-# Caso de Estudio — Sincronización Bidireccional Contacts ↔ Airtable
+# Case Study — Two-Way Sync Contacts ↔ Airtable
 
-## El cliente (ejemplo ilustrativo)
+## The client (illustrative example)
 
-**Empresa:** Inmobiliaria Horizonte
-**Sector:** Bienes raíces
-**Tamaño:** 8 agentes
-**Contacto:** Roberto Salas, gerente comercial
+**Company:** Horizonte Real Estate
+**Industry:** Real estate
+**Size:** 8 agents
+**Contact:** Roberto Salas, sales manager
 
-## El problema
+## The problem
 
-Los agentes de Inmobiliaria Horizonte gestionaban sus prospectos en una base de Airtable (compartida, con notas, etapa de venta, propiedad de interés, etc.). Pero a la hora de llamar o escribir por WhatsApp, necesitaban los contactos en sus teléfonos, es decir, en Google Contacts.
+Horizonte's agents managed their prospects in a shared Airtable base (with notes, sales stage, property of interest, etc.). But to call or message via WhatsApp, they needed the contacts on their phones, i.e., in Google Contacts.
 
-El proceso era manual y problemático:
+The process was manual and problematic:
 
-- Cada agente copiaba a mano los prospectos de Airtable a su teléfono.
-- Cuando alguien capturaba un contacto en el teléfono, no llegaba a la base compartida.
-- Se generaban duplicados y datos desactualizados en ambos lados.
-- Se perdía tiempo y se cometían errores de transcripción (teléfonos mal copiados).
+- Each agent manually copied prospects from Airtable to their phone.
+- When someone captured a contact on their phone, it never reached the shared base.
+- Duplicates and outdated data piled up on both sides.
+- Time was lost and transcription errors crept in (mistyped phone numbers).
 
-Necesitaban que ambos sistemas se mantuvieran en sintonía automáticamente, sin duplicados ni trabajo manual.
+They needed both systems to stay in sync automatically, with no duplicates and no manual work.
 
-## La solución propuesta
+## The proposed solution
 
-Una sincronización bidireccional automática entre Google Contacts y Airtable:
+An automatic two-way synchronization between Google Contacts and Airtable:
 
-1. **Google → Airtable:** los contactos del teléfono se reflejan en la base compartida, actualizándose sin duplicar.
-2. **Airtable → Google:** los prospectos nuevos capturados en la base aparecen automáticamente en Google Contacts, listos para contactar desde el teléfono.
+1. **Google → Airtable:** phone contacts are reflected in the shared base, updating without duplicating.
+2. **Airtable → Google:** new prospects captured in the base automatically appear in Google Contacts, ready to contact from the phone.
 
-Todo con dos garantías clave: **cero duplicados** (gracias al upsert) y **cero bucles** (gracias a la columna de control).
+All with two key guarantees: **zero duplicates** (via upsert) and **zero loops** (via the control column).
 
-## Implementación
+## Implementation
 
-Se construyeron dos workflows independientes en n8n. El primero trae los contactos de Google y los inserta o actualiza en Airtable usando el email como identificador único (upsert idempotente). El segundo detecta los contactos nuevos creados en Airtable, los crea en Google y los marca como sincronizados para no reprocesarlos, evitando bucles infinitos.
+Two independent workflows were built in n8n. The first pulls Google contacts and inserts or updates them in Airtable using the email as a unique identifier (idempotent upsert). The second detects new contacts created in Airtable, creates them in Google, and marks them as synced so they aren't reprocessed, avoiding infinite loops.
 
-El reto técnico principal fue manejar la estructura anidada e irregular de los datos de Google y diseñar el mecanismo anti-bucle, que es lo que diferencia una sincronización segura de una que se descontrola.
+The main technical challenge was handling the nested, irregular structure of Google's data and designing the anti-loop mechanism, which is what separates a safe sync from one that spirals out of control.
 
-## Resultados esperados
+## Expected results
 
-| Métrica | Antes | Después |
-|---------|-------|---------|
-| Copiado manual de contactos | Diario, por agente | Automático |
-| Duplicados | Frecuentes | Cero (upsert) |
-| Datos desactualizados | Constante | Sincronizado |
-| Errores de transcripción | Comunes | Eliminados |
+| Metric | Before | After |
+|--------|--------|-------|
+| Manual contact copying | Daily, per agent | Automatic |
+| Duplicates | Frequent | Zero (upsert) |
+| Outdated data | Constant | Synced |
+| Transcription errors | Common | Eliminated |
 
-## Valor del proyecto
+## Project value
 
-Una sincronización bidireccional se cotiza entre **$500 y $900 USD** en plataformas freelance, por su complejidad. No es una integración trivial: requiere manejar duplicados, prevenir bucles y trabajar con estructuras de datos irregulares. Pocos freelancers saben implementarla correctamente, lo que la convierte en un servicio diferenciador y bien pagado.
+A two-way synchronization is priced between **$500 and $900 USD** on freelance platforms, due to its complexity. It's not a trivial integration: it requires handling duplicates, preventing loops, and working with irregular data structures. Few freelancers know how to implement it correctly, which makes it a differentiating, well-paid service.
 
-## Aprendizaje técnico clave
+## Key technical takeaway
 
-Este fue el proyecto técnicamente más exigente del portafolio hasta este punto. Consolidó tres conceptos de ingeniería de datos: la **idempotencia** (ejecutar sin duplicar, vía upsert), la **prevención de bucles** (con una columna de control de estado) y el **manejo de datos anidados** de APIs reales. También reforzó una práctica profesional esencial: inspeccionar la estructura real de los datos antes de mapearlos, en lugar de asumirla.
+This was the most technically demanding project in the portfolio to this point. It consolidated three data-engineering concepts: **idempotency** (running without duplicating, via upsert), **loop prevention** (with a state control column), and **handling nested data** from real APIs. It also reinforced an essential professional practice: inspecting the real structure of the data before mapping it, instead of assuming it.
 
 ---
 
-*Nota: Este caso de estudio es ilustrativo, con fines de portafolio. Los datos del cliente son ficticios.*
+*Note: This case study is illustrative, for portfolio purposes. Client data is fictional.*

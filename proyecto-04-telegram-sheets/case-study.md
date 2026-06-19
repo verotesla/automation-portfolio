@@ -1,53 +1,53 @@
-# Caso de Estudio — Bot de Telegram con Registro y Respuestas Automáticas
+# Case Study — Telegram Bot with Logging and Auto-Replies
 
-## El cliente (ejemplo ilustrativo)
+## The client (illustrative example)
 
-**Negocio:** Estudio de Yoga "Equilibrio"
-**Tipo:** Pequeño estudio con 2 instructoras
-**Situación:** Reciben consultas por Telegram a todas horas, incluso fuera del horario de atención
+**Business:** "Equilibrio" Yoga Studio
+**Type:** Small studio with 2 instructors
+**Situation:** Receives Telegram inquiries at all hours, even outside business hours
 
-## El problema
+## The problem
 
-El estudio promociona su Telegram en redes sociales, y recibe un flujo constante de mensajes con las mismas preguntas: precios de las clases, horarios disponibles, dónde están ubicadas y solicitudes de ayuda para reservar.
+The studio promotes its Telegram on social media and receives a constant flow of messages with the same questions: class prices, available schedules, location, and help with booking.
 
-Los problemas concretos:
+The specific problems:
 
-- Las instructoras respondían las mismas preguntas decenas de veces al día.
-- Muchos mensajes llegaban de madrugada o durante las clases, y quedaban sin respuesta por horas.
-- No tenían un registro de cuántas personas consultaban ni qué preguntaban más.
-- Perdían posibles clientes que no recibían respuesta a tiempo.
+- The instructors answered the same questions dozens of times a day.
+- Many messages arrived overnight or during classes and went unanswered for hours.
+- They had no record of how many people inquired or what they asked most.
+- They lost potential clients who didn't get a timely response.
 
-## La solución propuesta
+## The proposed solution
 
-Un bot de Telegram que:
+A Telegram bot that:
 
-1. **Responde al instante** las preguntas frecuentes (precio, horario, ubicación), las 24 horas.
-2. **Registra cada mensaje** en una hoja de cálculo, con fecha, remitente y contenido.
-3. **Da una respuesta de cortesía** a cualquier mensaje que no encaje en las categorías, confirmando que fue recibido.
+1. **Replies instantly** to FAQs (price, hours, location), 24/7.
+2. **Logs every message** to a spreadsheet, with date, sender, and content.
+3. **Gives a courtesy reply** to any message that doesn't fit a category, confirming it was received.
 
-De este modo, las consultas básicas se resuelven solas y las instructoras solo intervienen cuando hace falta atención personalizada.
+This way, basic inquiries resolve themselves and the instructors only step in when personalized attention is needed.
 
-## Implementación
+## Implementation
 
-Se construyó el bot en n8n con un disparador de Telegram que detecta cada mensaje, un nodo de Google Sheets que lo registra (con la fecha convertida a formato legible), y un nodo Switch que evalúa el contenido contra listas de palabras clave para enviar la respuesta adecuada. Un Fallback garantiza que ningún mensaje quede sin contestar.
+Built in n8n with a Telegram trigger that detects each message, a Google Sheets node that logs it (with the date converted to a readable format), and a Switch node that evaluates the content against keyword lists to send the right reply. A Fallback guarantees no message goes unanswered.
 
-## Resultados esperados
+## Expected results
 
-| Métrica | Antes | Después |
-|---------|-------|---------|
-| Respuesta a preguntas frecuentes | Manual, con demora | Instantánea, 24/7 |
-| Mensajes sin responder | Frecuentes | Cero (siempre hay respuesta) |
-| Registro de consultas | No existía | Hoja de cálculo automática |
-| Tiempo de las instructoras en repetir respuestas | Alto | Mínimo |
+| Metric | Before | After |
+|--------|--------|-------|
+| FAQ responses | Manual, delayed | Instant, 24/7 |
+| Unanswered messages | Frequent | Zero (always a reply) |
+| Inquiry log | None | Automatic spreadsheet |
+| Instructor time repeating answers | High | Minimal |
 
-## Valor del proyecto
+## Project value
 
-Un bot de Telegram con registro y respuestas automáticas se cotiza entre **$250 y $450 USD** en plataformas freelance. Para un negocio pequeño, el beneficio es doble: ahorra tiempo del personal y mejora la experiencia del cliente al responder al instante, sin necesidad de contratar una plataforma de atención costosa.
+A Telegram bot with logging and auto-replies is priced between **$250 and $450 USD** on freelance platforms. For a small business, the benefit is twofold: it saves staff time and improves the customer experience with instant replies, without paying for an expensive support platform.
 
-## Aprendizaje técnico clave
+## Key technical takeaway
 
-Este proyecto integró tres habilidades: captura de mensajes (Telegram Trigger), almacenamiento estructurado (Google Sheets con conversión de fechas vía Luxon) y lógica de respuesta condicional (Switch con Fallback). La lección más valiosa fue entender que **los datos cambian de estructura al pasar por cada nodo**: el Switch debía evaluar el campo que salía de Google Sheets (`Mensaje`), no el dato original de Telegram. Diagnosticar esto mirando el panel de entrada de cada nodo es una habilidad fundamental en automatización.
+This project integrated three skills: message capture (Telegram Trigger), structured storage (Google Sheets with date conversion via Luxon), and conditional reply logic (Switch with Fallback). The most valuable lesson was understanding that **data changes structure as it passes through each node**: the Switch had to evaluate the field coming out of Google Sheets (`Mensaje`), not Telegram's original data. Diagnosing this by checking each node's input panel is a fundamental automation skill.
 
 ---
 
-*Nota: Este caso de estudio es ilustrativo, con fines de portafolio. Los datos del cliente son ficticios.*
+*Note: This case study is illustrative, for portfolio purposes. Client data is fictional.*

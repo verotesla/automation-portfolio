@@ -1,54 +1,54 @@
-# Caso de Estudio — Captación de Solicitudes con Fan-out (Typeform → Asana + Slack + Sheets)
+# Case Study — Inquiry Capture with Fan-out (Typeform → Asana + Slack + Sheets)
 
-## El cliente (ejemplo ilustrativo)
+## The client (illustrative example)
 
-**Empresa:** PixelForge Studio
-**Sector:** Agencia de diseño y desarrollo web
-**Tamaño:** 6 personas
-**Contacto:** Daniel Ortega, director
+**Company:** PixelForge Studio
+**Industry:** Design and web development agency
+**Size:** 6 people
+**Contact:** Daniel Ortega, director
 
-## El problema
+## The problem
 
-PixelForge capta clientes a través de un formulario en su sitio web. El proceso posterior era manual y se les escapaban oportunidades:
+PixelForge captures clients through a form on their website. The downstream process was manual, and opportunities slipped through:
 
-- Las solicitudes llegaban por correo y alguien tenía que copiarlas a una hoja de cálculo.
-- El equipo no se enteraba a tiempo de que había llegado una nueva solicitud.
-- No se creaba tarea de seguimiento, así que algunas solicitudes se quedaban sin respuesta.
-- No había un único lugar donde ver el estado de cada prospecto.
+- Inquiries arrived by email and someone had to copy them into a spreadsheet.
+- The team didn't find out in time that a new inquiry had arrived.
+- No follow-up task was created, so some inquiries went unanswered.
+- There was no single place to see the status of each prospect.
 
-El resultado: prospectos perdidos por demoras y falta de seguimiento, además de tiempo desperdiciado en tareas de copiar y pegar.
+The result: lost prospects from delays and missing follow-up, plus wasted time on copy-and-paste.
 
-## La solución propuesta
+## The proposed solution
 
-Un flujo automatizado que, con cada envío del formulario, dispara **tres acciones a la vez** (patrón fan-out):
+An automated flow that, on each form submission, triggers **three actions at once** (fan-out pattern):
 
-1. **Registra** la solicitud en una hoja de Google Sheets (respaldo consultable).
-2. **Notifica** al equipo en un canal de Slack al instante.
-3. **Crea una tarea** en Asana para asegurar el seguimiento.
+1. **Logs** the inquiry to a Google Sheet (queryable backup).
+2. **Notifies** the team in a Slack channel instantly.
+3. **Creates a task** in Asana to ensure follow-up.
 
-Así, ninguna solicitud se pierde: queda archivada, el equipo se entera de inmediato y siempre hay una tarea asignada para darle seguimiento.
+This way no inquiry is lost: it's archived, the team is notified immediately, and there's always an assigned task to follow up.
 
-## Implementación
+## Implementation
 
-Se construyó el workflow en n8n con un disparador de Typeform que se ramifica en tres caminos independientes. Cada rama toma los datos directamente del formulario y los envía a su destino: Google Sheets (registro), Slack (aviso) y Asana (tarea). Las tres se ejecutan en paralelo a partir de un solo evento.
+Built in n8n with a Typeform trigger that branches into three independent paths. Each branch takes the data directly from the form and sends it to its destination: Google Sheets (log), Slack (alert), and Asana (task). All three run in parallel from a single event.
 
-## Resultados esperados
+## Expected results
 
-| Métrica | Antes | Después |
-|---------|-------|---------|
-| Registro de solicitudes | Manual (copiar/pegar) | Automático |
-| Tiempo en enterarse de una solicitud | Horas | Instantáneo (Slack) |
-| Solicitudes con seguimiento asignado | Inconsistente | 100% (tarea en Asana) |
-| Solicitudes perdidas | Frecuentes | Cero |
+| Metric | Before | After |
+|--------|--------|-------|
+| Inquiry logging | Manual (copy/paste) | Automatic |
+| Time to learn of an inquiry | Hours | Instant (Slack) |
+| Inquiries with assigned follow-up | Inconsistent | 100% (Asana task) |
+| Lost inquiries | Frequent | Zero |
 
-## Valor del proyecto
+## Project value
 
-Una automatización de captación tipo fan-out se cotiza entre **$400 y $700 USD** en plataformas freelance, según el número de destinos y reglas de negocio. Su atractivo es que automatiza el proceso completo de captación y asignación, conectando varias herramientas que el negocio ya usa. El retorno es directo: cada prospecto recuperado vale mucho más que el costo de la automatización.
+A fan-out capture automation is priced between **$400 and $700 USD** on freelance platforms, depending on the number of destinations and business rules. Its appeal is that it automates the full capture-and-assignment process, connecting several tools the business already uses. The return is direct: each recovered prospect is worth far more than the cost of the automation.
 
-## Aprendizaje técnico clave
+## Key technical takeaway
 
-Este proyecto consolidó el patrón **fan-out**: un único disparador que se ramifica en varias acciones paralelas e independientes. La clave técnica fue que todas las ramas referencian los datos del mismo origen con `$('Typeform Trigger').item.json[...]`, en lugar de encadenarse una tras otra. También reforzó el diagnóstico de errores de integración (Channel ID de Slack, permisos del bot) y el manejo de nombres de campo con caracteres especiales.
+This project consolidated the **fan-out** pattern: a single trigger that branches into several independent, parallel actions. The key technical point was that all branches reference the same source data with `$('Typeform Trigger').item.json[...]`, instead of chaining one after another. It also reinforced diagnosing integration errors (Slack Channel ID, bot permissions) and handling field names with special characters.
 
 ---
 
-*Nota: Este caso de estudio es ilustrativo, con fines de portafolio. Los datos del cliente son ficticios.*
+*Note: This case study is illustrative, for portfolio purposes. Client data is fictional.*

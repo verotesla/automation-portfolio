@@ -1,149 +1,114 @@
-# Setup Guide - Proyecto 1
+# Setup Guide — Project 1: Google Forms → Sheets + Email
 
-Guía técnica paso a paso para configurar el workflow.
-
----
-
-## ✅ Requisitos previos
-
-- [ ] Cuenta Google (Gmail)
-- [ ] n8n.cloud account (free)
-- [ ] 45 minutos
-- [ ] Navegador moderno (Chrome, Firefox, Edge)
+This guide walks through building a workflow that captures form responses, logs them to Google Sheets, and sends an automatic confirmation email.
 
 ---
 
-## 🔧 Paso 1: Google Cloud Setup (10 minutos)
+## Prerequisites
 
-### 1.1 Crear proyecto
-1. Ve a: https://console.cloud.google.com
-2. Selector de proyecto (arriba izquierda) → "NEW PROJECT"
-3. Nombre: `n8n-automations`
-4. Crear
+- Google account (Gmail)
+- [n8n.cloud](https://n8n.cloud) account
+- Estimated time: 45 minutes
 
-### 1.2 Habilitar APIs
-Busca y habilita estas 3 APIs:
-1. `Google Forms API` → ENABLE
-2. `Google Sheets API` → ENABLE
-3. `Gmail API` → ENABLE
+---
 
-### 1.3 Crear Service Account
-1. Menú → "Credentials"
-2. "CREATE CREDENTIALS" → "Service Account"
-3. Nombre: `n8n-sa`
-4. Create and Continue
-5. Role: "Editor"
-6. Continue → Done
+## Part 1 — Google Cloud setup
 
-### 1.4 Descargar JSON
+### Create the project
+1. Go to [console.cloud.google.com](https://console.cloud.google.com).
+2. Project selector (top left) → **New Project**.
+3. Name: `n8n-automations` → Create.
+
+### Enable the APIs
+Search for and enable these three APIs:
+- Google Forms API
+- Google Sheets API
+- Gmail API
+
+### Create a Service Account
+1. Menu → **Credentials**.
+2. **Create Credentials** → **Service Account**.
+3. Name: `n8n-sa` → Create and Continue.
+4. Role: **Editor** → Continue → Done.
+
+### Download the JSON key
 1. Service Accounts → `n8n-sa@...`
-2. Pestaña "KEYS"
-3. "ADD KEY" → "Create new key" → "JSON"
-4. Descargar (guárdalo seguro)
-
-✅ Google Cloud listo
+2. **Keys** tab → **Add Key** → **Create new key** → **JSON**.
+3. Download and store it securely.
 
 ---
 
-## 📝 Paso 2: Google Form (7 minutos)
+## Part 2 — Google Form
 
-### 2.1 Crear formulario
-1. forms.google.com
-2. Crear nuevo formulario
-3. Título: `Consulta de Clientes`
-4. Descripción: `Por favor, completa este formulario...`
-
-### 2.2 Agregar campos
-1. **Nombre** - Respuesta corta (obligatorio)
-2. **Email** - Respuesta corta + Validación Email (obligatorio)
-3. **Teléfono** - Respuesta corta (obligatorio)
-4. **Mensaje** - Párrafo (obligatorio)
-
-### 2.3 Publicar
-1. Botón "Publish" (arriba derecha)
-2. Copiar link
-
-### 2.4 Conectar Google Sheets
-1. Pestaña "Respuestas"
-2. Icono Google Sheets (abajo izquierda)
-3. Crear Sheet automáticamente
-
-✅ Google Form + Sheets listo
+1. Go to [forms.google.com](https://forms.google.com) and create a form: `Customer Inquiry`.
+2. Add four fields:
+   - Name — Short answer (required)
+   - Email — Short answer + Email validation (required)
+   - Phone — Short answer (required)
+   - Message — Paragraph (required)
+3. Publish the form and copy the link.
+4. In the **Responses** tab, click the Google Sheets icon to auto-create the linked sheet.
 
 ---
 
-## ⚙️ Paso 3: Configurar n8n (20 minutos)
+## Part 3 — Configure n8n
 
-### 3.1 Crear workflow
-1. n8n.cloud → "New Workflow"
+### Create the workflow
+1. n8n.cloud → **New Workflow**.
 
-### 3.2 Agregar Google Sheets Trigger
-1. "+" → Buscar "Google Sheets" → "Google Sheets Trigger"
-2. Create new credentials → Service Account JSON
-3. Pega contenido del archivo JSON descargado
-4. Document: "Consulta de Clientes (Respuestas)"
-5. Sheet: "Form Responses 1"
-6. Trigger On: "Row Added"
-7. Haz clic "Fetch Test Event"
+### Add the Google Sheets Trigger
+1. **+** → search "Google Sheets" → **Google Sheets Trigger**.
+2. Create new credentials → Service Account JSON → paste the downloaded JSON contents.
+3. Document: the form responses sheet.
+4. Sheet: "Form Responses 1".
+5. Trigger On: **Row Added** → click **Fetch Test Event**.
 
-### 3.3 Agregar Gmail Send
-1. "+" (a la derecha) → Buscar "Gmail" → "Send Email"
-2. Create new credentials → Google OAuth2
-3. Autorizar Gmail
+### Add Gmail Send
+1. **+** → search "Gmail" → **Send Email**.
+2. Create new credentials → Google OAuth2 → authorize Gmail.
 
-### 3.4 Configurar Email
-- **To**: Haz clic y selecciona "email" del formulario
-- **Subject**: `Confirmación de tu consulta`
-- **Message**:
+### Configure the email
+- **To:** select the form's "email" field.
+- **Subject:** `Confirmation of your inquiry`
+- **Message:**
   ```
-  Hola,
-  
-  Gracias por contactarnos.
-  Hemos recibido tu consulta y responderemos pronto.
-  
-  Saludos,
-  El equipo
+  Hello,
+
+  Thank you for contacting us.
+  We've received your inquiry and will respond soon.
+
+  Best regards,
+  The team
   ```
 
-### 3.5 Publicar
-1. Botón "Publish" (arriba derecha)
-2. Version Name: `v1.0 - Initial setup`
-3. Save
-
-✅ Workflow publicado y vivo
+### Publish
+1. Click **Publish** (top right).
+2. Version Name: `v1.0 - Initial setup` → Save.
 
 ---
 
-## ✅ Paso 4: Probar (5 minutos)
+## Part 4 — Test
 
-1. Abre tu Google Form
-2. Completa los datos
-3. Verifica:
-   - ¿Datos en Google Sheets? ✅
-   - ¿Email recibido? ✅
-
----
-
-## 🐛 Troubleshooting rápido
-
-| Problema | Solución |
-|----------|----------|
-| "Unable to sign" | Ventana incógnito o Setup manual JSON |
-| Email no llega | Revisar Spam, límite 100/día free tier |
-| Datos no en Sheets | Verificar permisos, compartir Sheet con email de service account |
-| Workflow no se ejecuta | Verificar que esté Publicado (botón debe estar verde) |
+1. Open the Google Form and fill it out.
+2. Verify:
+   - Data appears in Google Sheets ✅
+   - Confirmation email received ✅
 
 ---
 
-## 📚 Links útiles
+## Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| "Unable to sign" | Use an incognito window or set up the JSON manually |
+| Email doesn't arrive | Check Spam; free tier has a 100/day limit |
+| Data not in Sheets | Check permissions; share the Sheet with the service account email |
+| Workflow doesn't run | Make sure it's Published (button should be green) |
+
+---
+
+## Useful links
 
 - [n8n Docs](https://docs.n8n.io)
 - [Google Forms API](https://developers.google.com/forms)
 - [Gmail API](https://developers.google.com/gmail/api)
-- [Ver README completo](./README.md)
-
----
-
-**¿Problemas? Ver [case-study.md](./case-study.md) para ejemplo real**
-
-**Última actualización**: Junio 2024

@@ -1,81 +1,80 @@
-# Guía de Configuración — Proyecto 5: Typeform → Asana + Slack + Sheets
+# Setup Guide — Project 5: Typeform → Asana + Slack + Sheets
 
-Esta guía documenta cómo construir un flujo fan-out: un formulario que dispara tres acciones en paralelo.
-
----
-
-## Requisitos previos
-
-- Cuenta en [n8n.cloud](https://n8n.cloud)
-- Cuenta en [Typeform](https://typeform.com) (plan gratuito)
-- Cuenta de Google (Sheets)
-- Workspace de Slack con app configurada (del Proyecto 2)
-- Cuenta en [Asana](https://asana.com) (plan gratuito)
-- Tiempo estimado: 3–4 horas
+This guide walks through building a fan-out flow: a form that triggers three actions in parallel.
 
 ---
 
-## Parte 1 — Formulario en Typeform
+## Prerequisites
 
-1. Crear un formulario nuevo: `Solicitud de Servicio`.
-2. Agregar 4 preguntas:
+- [n8n.cloud](https://n8n.cloud) account
+- [Typeform](https://typeform.com) account (free tier)
+- Google account (Sheets)
+- Slack workspace with app configured (from Project 2)
+- [Asana](https://asana.com) account (free tier)
+- Estimated time: 3–4 hours
+
+---
+
+## Part 1 — Typeform form
+
+1. Create a new form: `Solicitud de Servicio`.
+2. Add 4 questions:
    - ¿Cuál es tu nombre? (Short Text)
    - ¿Cuál es tu correo electrónico? (Email)
    - Tipo de servicio (Multiple Choice: Consultoría, Automatización, Soporte)
    - Descripción (Long Text)
-3. Publicar el formulario.
+3. Publish the form.
 
-### Token de Typeform
+### Typeform token
+1. Go to **Settings → Personal tokens** (admin.typeform.com).
+2. **Generate a new token** → choose **Custom scopes** (least privilege).
+3. Check: Accounts Read, Forms Read, Responses Read, Webhooks Read, Webhooks Write, Workspaces Read.
+4. Generate and copy the token.
 
-1. Ir a **Settings → Personal tokens** (admin.typeform.com).
-2. **Generate a new token** → elegir **Custom scopes** (mínimo privilegio).
-3. Marcar: Accounts Read, Forms Read, Responses Read, Webhooks Read, Webhooks Write, Workspaces Read.
-4. Generar y copiar el token.
-
-> 💡 Buenas prácticas: usar "Custom scopes" en lugar de "All scopes". Solo se otorgan los permisos necesarios.
+> 💡 Best practice: use "Custom scopes" instead of "All scopes". Only grant the permissions you need.
 
 ---
 
-## Parte 2 — Typeform Trigger en n8n
+## Part 2 — Typeform Trigger in n8n
 
-1. Crear workflow: `Typeform Multi-destino`.
+1. Create a workflow: `Typeform Multi-destino`.
 2. **Add first step** → `Typeform` → **"On form submission"**.
-3. **Credential:** pegar el token.
-4. **Form:** seleccionar el formulario.
-5. Activar **Simplify Answers** y **Only Answers** (datos más limpios).
-6. **Test this trigger** → llenar y enviar el formulario → confirmar que llegan los datos.
+3. **Credential:** paste the token.
+4. **Form:** select the form.
+5. Enable **Simplify Answers** and **Only Answers** (cleaner data).
+6. **Test this trigger** → fill out and submit the form → confirm the data arrives.
 
-> El Typeform Trigger crea el webhook automáticamente (por eso se necesitan los scopes de webhooks).
+> The Typeform Trigger creates the webhook automatically (that's why the webhook scopes are needed).
 
 ---
 
-## Parte 3 — Rama 1: Google Sheets
+## Part 3 — Branch 1: Google Sheets
 
-1. Crear hoja `Solicitudes de Servicio` con encabezados: Fecha, Nombre, Email, Servicio, Descripción.
-2. Desde el **Typeform Trigger**, agregar **Google Sheets → Append Row**.
-3. Seleccionar documento y hoja.
-4. Mapear:
+1. Create a sheet `Solicitudes de Servicio` with headers: Fecha, Nombre, Email, Servicio, Descripción.
+2. From the **Typeform Trigger**, add **Google Sheets → Append Row**.
+3. Select document and sheet.
+4. Map:
 
-| Columna | Expresión |
-|---------|-----------|
+| Column | Expression |
+|--------|-----------|
 | Fecha | `{{ $now.toFormat('dd/MM/yyyy HH:mm:ss') }}` |
 | Nombre | `{{ $json["¿Cuál es tu nombre?"] }}` |
 | Email | `{{ $json["¿Cuál es tu correo electrónico?"] }}` |
 | Servicio | `{{ $json["Tipo de servicio"] }}` |
 | Descripción | `{{ $json["Descripción"] }}` |
 
-5. Execute step → verificar fila nueva en la hoja.
+5. Execute step → verify a new row in the sheet.
 
 ---
 
-## Parte 4 — Rama 2: Slack
+## Part 4 — Branch 2: Slack
 
-⚠️ El nodo debe salir del **Typeform Trigger**, no de Google Sheets (es una rama paralela).
+⚠️ The node must come from the **Typeform Trigger**, not from Google Sheets (it's a parallel branch).
 
-1. Desde el trigger, agregar **Slack → Send a message**.
-2. **Credential:** la de Slack (del Proyecto 2).
+1. From the trigger, add **Slack → Send a message**.
+2. **Credential:** the Slack one (from Project 2).
 3. **Send Message To:** Channel.
-4. **Channel:** modo **"By ID"** → pegar el Channel ID (ej. `C0BABMRGAEA`).
+4. **Channel:** **"By ID"** mode → paste the Channel ID (e.g., `C0BABMRGAEA`).
 5. **Message Text:**
 ```
 🔔 Nueva solicitud de servicio
@@ -85,58 +84,58 @@ Esta guía documenta cómo construir un flujo fan-out: un formulario que dispara
 🛠️ Servicio: {{ $('Typeform Trigger').item.json["Tipo de servicio"] }}
 📝 Descripción: {{ $('Typeform Trigger').item.json["Descripción"] }}
 ```
-6. Quitar la firma: Options → desactivar "Include link to workflow".
-7. Execute step → verificar mensaje en el canal.
+6. Remove the signature: Options → disable "Include link to workflow".
+7. Execute step → verify the message in the channel.
 
 ---
 
-## Parte 5 — Rama 3: Asana
+## Part 5 — Branch 3: Asana
 
-1. En Asana, crear un proyecto: `Solicitudes de Servicio` (vista List). Borrar las tareas de ejemplo.
-2. En n8n, desde el **Typeform Trigger**, agregar **Asana → Create a Task**.
-3. **Credential:** conectar vía **OAuth2** (un clic para autorizar).
-4. **Workspace:** seleccionar el workspace.
+1. In Asana, create a project: `Solicitudes de Servicio` (List view). Delete the sample tasks.
+2. In n8n, from the **Typeform Trigger**, add **Asana → Create a Task**.
+3. **Credential:** connect via **OAuth2** (one click to authorize).
+4. **Workspace:** select the workspace.
 5. **Name:**
 ```
 Nueva solicitud: {{ $('Typeform Trigger').item.json["¿Cuál es tu nombre?"] }} - {{ $('Typeform Trigger').item.json["Tipo de servicio"] }}
 ```
-6. **Notes** (en Additional Fields o campo Notes):
+6. **Notes** (in Additional Fields or the Notes field):
 ```
 📧 Email: {{ $('Typeform Trigger').item.json["¿Cuál es tu correo electrónico?"] }}
 📝 Descripción: {{ $('Typeform Trigger').item.json["Descripción"] }}
 ```
-7. **Project Names or IDs:** seleccionar `Solicitudes de Servicio`.
-8. Execute step → verificar la tarea creada en Asana.
+7. **Project Names or IDs:** select `Solicitudes de Servicio`.
+8. Execute step → verify the task created in Asana.
 
 ---
 
-## Parte 6 — Prueba final y publicación
+## Part 6 — Final test and publish
 
-1. **Publicar/activar** el workflow.
-2. Llenar y enviar el formulario con datos nuevos.
-3. Verificar que un solo envío dispare las 3 ramas:
-   - Fila nueva en Google Sheets
-   - Mensaje en Slack
-   - Tarea nueva en Asana
-
----
-
-## Errores encontrados y soluciones
-
-| Error / Situación | Causa | Solución |
-|-------------------|-------|----------|
-| `channel_not_found` en Slack | Channel ID incorrecto, o estaba en modo "From list" | Usar "By ID" con el Channel ID correcto |
-| Mensaje de Slack no llega | El bot fue removido del canal | Reagregar el bot: `/invite @n8n-automation` |
-| "joined #consultas" en vez del mensaje | El bot se unió al canal al ejecutar | Volver a ejecutar; ya unido, envía el mensaje real |
-| Campos no se mapean | Nombres con acentos/espacios | Usar sintaxis `$json["¿Cuál es tu nombre?"]` |
-| "Execute previous nodes to view input data" | El nodo no tiene datos del trigger | Ejecutar desde el trigger o usar "Execute workflow" |
-| Aparece la firma de n8n | Atribución activada | Desactivar "Include link to workflow" |
+1. **Publish/activate** the workflow.
+2. Fill out and submit the form with new data.
+3. Verify that a single submission triggers all 3 branches:
+   - New row in Google Sheets
+   - Message in Slack
+   - New task in Asana
 
 ---
 
-## Posibles mejoras futuras
+## Errors and fixes
 
-- **Asignar la tarea de Asana** a un responsable según el tipo de servicio.
-- **Email de confirmación** al cliente (cuarta rama).
-- **Filtro/Switch** para enrutar según el tipo de servicio (ej. Soporte va a un canal distinto).
-- **Fecha de vencimiento** automática en la tarea de Asana (ej. +3 días).
+| Error / Situation | Cause | Fix |
+|-------------------|-------|-----|
+| `channel_not_found` in Slack | Wrong Channel ID, or "From list" mode | Use "By ID" with the correct Channel ID |
+| Slack message doesn't arrive | Bot was removed from the channel | Re-add the bot: `/invite @n8n-automation` |
+| "joined #consultas" instead of the message | Bot joined the channel on execution | Run again; once joined, it sends the real message |
+| Fields don't map | Names with accents/spaces | Use `$json["¿Cuál es tu nombre?"]` syntax |
+| "Execute previous nodes to view input data" | Node has no trigger data | Run from the trigger or use "Execute workflow" |
+| n8n signature appears | Attribution enabled | Disable "Include link to workflow" |
+
+---
+
+## Possible future improvements
+
+- **Assign the Asana task** to an owner based on service type.
+- **Confirmation email** to the client (fourth branch).
+- **Filter/Switch** to route by service type (e.g., Support goes to a different channel).
+- **Automatic due date** on the Asana task (e.g., +3 days).
