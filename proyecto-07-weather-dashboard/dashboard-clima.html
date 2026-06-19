@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clima · CDMX · Guadalajara · Monterrey</title>
+<style>
+  :root {
+    --ink: #1a2332;
+    --paper: #eef2f5;
+    --mist: #c4d3dd;
+    --cold: #3d7ea6;
+    --mild: #e0a458;
+    --warm: #c75146;
+    --line: rgba(26, 35, 50, 0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background:
+      radial-gradient(ellipse at top, #f6f9fb 0%, var(--paper) 55%, #dde6ec 100%);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 48px 24px 64px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1000px; margin: 0 auto; }
+
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 18px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .title {
+    font-size: clamp(28px, 5vw, 46px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+  }
+  .title span { display: block; font-weight: 300; font-size: 0.42em; letter-spacing: 0.18em; text-transform: uppercase; color: #5a6b7d; margin-top: 8px; }
+
+  .stamp {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #5a6b7d;
+    text-align: right;
+    line-height: 1.5;
+  }
+
+  .lead {
+    font-size: 14px;
+    color: #5a6b7d;
+    margin: 16px 0 36px;
+    max-width: 60ch;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 28px 26px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 14px 34px rgba(26,35,50,0.10); }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+  }
+  .card.cold::before { background: var(--cold); }
+  .card.mild::before { background: var(--mild); }
+  .card.warm::before { background: var(--warm); }
+
+  .city {
+    font-size: 13px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #5a6b7d;
+  }
+
+  .temp {
+    font-size: 72px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin: 14px 0 2px;
+  }
+  .temp sup { font-size: 26px; font-weight: 400; vertical-align: super; color: #8a99a8; }
+
+  .desc {
+    font-size: 15px;
+    font-weight: 600;
+    text-transform: capitalize;
+    margin-bottom: 22px;
+  }
+  .cold .desc { color: var(--cold); }
+  .mild .desc { color: #b07d2e; }
+  .warm .desc { color: var(--warm); }
+
+  .rows { border-top: 1px solid var(--line); padding-top: 14px; }
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    font-size: 14px;
+  }
+  .row .k { color: #8a99a8; letter-spacing: 0.04em; }
+  .row .v { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .bar { height: 6px; border-radius: 3px; background: var(--paper); margin-top: 5px; overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: 3px; }
+  .cold .bar i { background: var(--cold); }
+  .mild .bar i { background: var(--mild); }
+  .warm .bar i { background: var(--warm); }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: #8a99a8;
+    letter-spacing: 0.04em;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card { transition: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1 class="title">Clima en vivo<span>Tres ciudades · México</span></h1>
+      <div class="stamp">
+        Fuente · OpenWeatherMap<br>
+        Captura · 19 jun 2026, 03:52
+      </div>
+    </header>
+
+    <p class="lead">Monitoreo automatizado del clima en CDMX, Guadalajara y Monterrey. Los datos se obtienen vía API y se registran en un histórico de forma periódica mediante un workflow de n8n.</p>
+
+    <div class="grid">
+
+      <!-- CDMX -->
+      <article class="card cold">
+        <div class="city">Ciudad de México</div>
+        <div class="temp">16.6<sup>°C</sup></div>
+        <div class="desc">Lluvia intensa</div>
+        <div class="rows">
+          <div class="row"><span class="k">Sensación</span><span class="v">16.4°</span></div>
+          <div class="row">
+            <span class="k">Humedad</span><span class="v">77%</span>
+          </div>
+          <div class="bar"><i style="width:77%"></i></div>
+        </div>
+      </article>
+
+      <!-- Guadalajara -->
+      <article class="card mild">
+        <div class="city">Guadalajara</div>
+        <div class="temp">21.9<sup>°C</sup></div>
+        <div class="desc">Nublado</div>
+        <div class="rows">
+          <div class="row"><span class="k">Sensación</span><span class="v">21.9°</span></div>
+          <div class="row">
+            <span class="k">Humedad</span><span class="v">66%</span>
+          </div>
+          <div class="bar"><i style="width:66%"></i></div>
+        </div>
+      </article>
+
+      <!-- Monterrey -->
+      <article class="card warm">
+        <div class="city">Monterrey</div>
+        <div class="temp">27.7<sup>°C</sup></div>
+        <div class="desc">Lluvia ligera</div>
+        <div class="rows">
+          <div class="row"><span class="k">Sensación</span><span class="v">30.2°</span></div>
+          <div class="row">
+            <span class="k">Humedad</span><span class="v">71%</span>
+          </div>
+          <div class="bar"><i style="width:71%"></i></div>
+        </div>
+      </article>
+
+    </div>
+
+    <footer>
+      <span>Weather Dashboard · Proyecto 7</span>
+      <span>n8n · HTTP Request → Google Sheets</span>
+    </footer>
+  </div>
+</body>
+</html>

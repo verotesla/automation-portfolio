@@ -1,0 +1,222 @@
+{
+  "name": "Weather Dashboard",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f01c3d05-6c01-47af-8a01-611f233b7cb9",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  { json: { ciudad: \"Mexico City\", nombre: \"CDMX\" } },\n  { json: { ciudad: \"Guadalajara\", nombre: \"Guadalajara\" } },\n  { json: { ciudad: \"Monterrey\", nombre: \"Monterrey\" } }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "95191fd3-493f-4328-8bb4-55d49c3ace19",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.ciudad }}"
+            },
+            {
+              "name": "appid",
+              "value": "b6f601fb78e5541e8fd284de1f55e995"
+            },
+            {
+              "name": "units",
+              "value": "metric"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "99036169-aa72-40dc-91bb-e5ff51d4fa48",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1awew9ucoCvu89SONULzumVkqE31-Ijr42sgkHCiZxEY",
+          "mode": "list",
+          "cachedResultName": "Clima Histórico",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1awew9ucoCvu89SONULzumVkqE31-Ijr42sgkHCiZxEY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1awew9ucoCvu89SONULzumVkqE31-Ijr42sgkHCiZxEY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha": "={{ $now.toFormat('dd/MM/yyyy HH:mm:ss') }}",
+            "Ciudad": "={{ $json.name }}",
+            "Temperatura": "={{ $json.main.temp }}",
+            "Sensación": "={{ $json.main.feels_like }}",
+            "Humedad": "={{ $json.main.humidity }}",
+            "Descripción": "={{ $json.weather[0].description }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ciudad",
+              "displayName": "Ciudad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Temperatura",
+              "displayName": "Temperatura",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sensación",
+              "displayName": "Sensación",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Humedad",
+              "displayName": "Humedad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Descripción",
+              "displayName": "Descripción",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        624,
+        0
+      ],
+      "id": "54d0d3db-5b9a-4ff3-a52c-38fb138c3460",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BEbXUFafwWr2JWt9",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6063bf33-58b4-49b3-a2d8-48cff81f5da7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cb28012689836221fd7a8290b41de9829c27c4707b9f1e96b5709e702e2bf102"
+  },
+  "nodeGroups": [],
+  "id": "Vn6iC11DNN6QVPM7",
+  "tags": []
+}
