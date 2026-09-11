@@ -1,114 +1,293 @@
-# Setup Guide — Project 1: Google Forms → Sheets + Email
+# Setup Guide — Project 01: Customer Inquiry Automation
 
-This guide walks through building a workflow that captures form responses, logs them to Google Sheets, and sends an automatic confirmation email.
+This guide reproduces the workflow using a self-hosted n8n instance running in Docker.
 
----
+> The public workflow export is sanitized. You must configure your own Google resources and credentials after import.
 
-## Prerequisites
+## 1. Prerequisites
 
-- Google account (Gmail)
-- [n8n.cloud](https://n8n.cloud) account
-- Estimated time: 45 minutes
+- Docker Desktop
+- Docker Compose
+- A Google account
+- Access to Google Forms, Google Sheets, and Gmail
+- A Google Cloud project
+- n8n self-hosted locally
 
----
+The implementation used n8n `2.26.8`.
 
-## Part 1 — Google Cloud setup
+## 2. Start n8n with Docker
 
-### Create the project
-1. Go to [console.cloud.google.com](https://console.cloud.google.com).
-2. Project selector (top left) → **New Project**.
-3. Name: `n8n-automations` → Create.
+A safe example configuration is included in `deployment/`.
 
-### Enable the APIs
-Search for and enable these three APIs:
-- Google Forms API
+Copy:
+
+```text
+deployment/docker-compose.example.yml
+deployment/.env.example
+```
+
+into your local n8n working directory.
+
+Rename:
+
+```text
+.env.example → .env
+```
+
+Generate a strong encryption key and replace the placeholder in `.env`.
+
+Then run:
+
+```bash
+docker compose up -d
+```
+
+Open:
+
+```text
+http://localhost:5678
+```
+
+See `deployment/README.md` for details.
+
+## 3. Create the Google Form
+
+Create a form named:
+
+```text
+Customer Inquiry
+```
+
+Add these required fields:
+
+1. `Name` — Short answer
+2. `Email` — Short answer
+3. `Phone` — Short answer
+4. `Message` — Paragraph
+
+## 4. Link the Form to Google Sheets
+
+In Google Forms:
+
+1. Open **Responses**.
+2. Click the Google Sheets icon.
+3. Create a new spreadsheet named:
+
+```text
+Customer Inquiry - Responses
+```
+
+The response sheet should contain fields similar to:
+
+```text
+Timestamp | Name | Email | Phone | Message
+```
+
+Submit at least one test response.
+
+## 5. Configure Google Cloud
+
+Create or select a Google Cloud project.
+
+Enable these APIs:
+
 - Google Sheets API
+- Google Drive API
 - Gmail API
 
-### Create a Service Account
-1. Menu → **Credentials**.
-2. **Create Credentials** → **Service Account**.
-3. Name: `n8n-sa` → Create and Continue.
-4. Role: **Editor** → Continue → Done.
+Google Forms API is not required for this architecture because Google Forms writes directly to Google Sheets.
 
-### Download the JSON key
-1. Service Accounts → `n8n-sa@...`
-2. **Keys** tab → **Add Key** → **Create new key** → **JSON**.
-3. Download and store it securely.
+## 6. Configure the OAuth Consent Screen
 
----
+In **Google Auth Platform**:
 
-## Part 2 — Google Form
+1. Configure the app branding.
+2. Set the audience to **External**.
+3. Keep the app in **Testing** while developing.
+4. Add your own Google account under **Test users**.
 
-1. Go to [forms.google.com](https://forms.google.com) and create a form: `Customer Inquiry`.
-2. Add four fields:
-   - Name — Short answer (required)
-   - Email — Short answer + Email validation (required)
-   - Phone — Short answer (required)
-   - Message — Paragraph (required)
-3. Publish the form and copy the link.
-4. In the **Responses** tab, click the Google Sheets icon to auto-create the linked sheet.
+Suggested app name:
 
----
+```text
+n8n Automation Portfolio
+```
 
-## Part 3 — Configure n8n
+## 7. Create OAuth Clients
 
-### Create the workflow
-1. n8n.cloud → **New Workflow**.
+Create a **Web application** OAuth client.
 
-### Add the Google Sheets Trigger
-1. **+** → search "Google Sheets" → **Google Sheets Trigger**.
-2. Create new credentials → Service Account JSON → paste the downloaded JSON contents.
-3. Document: the form responses sheet.
-4. Sheet: "Form Responses 1".
-5. Trigger On: **Row Added** → click **Fetch Test Event**.
+Use this redirect URI for local n8n:
 
-### Add Gmail Send
-1. **+** → search "Gmail" → **Send Email**.
-2. Create new credentials → Google OAuth2 → authorize Gmail.
+```text
+http://localhost:5678/rest/oauth2-credential/callback
+```
 
-### Configure the email
-- **To:** select the form's "email" field.
-- **Subject:** `Confirmation of your inquiry`
-- **Message:**
-  ```
-  Hello,
+You can use separate OAuth clients for Google Sheets and Gmail to keep integrations isolated.
 
-  Thank you for contacting us.
-  We've received your inquiry and will respond soon.
+Example names:
 
-  Best regards,
-  The team
-  ```
+```text
+n8n Google Sheets
+n8n Gmail
+```
 
-### Publish
-1. Click **Publish** (top right).
-2. Version Name: `v1.0 - Initial setup` → Save.
+Never commit the Client Secret to GitHub.
 
----
+## 8. Import the Workflow
 
-## Part 4 — Test
+In n8n:
 
-1. Open the Google Form and fill it out.
-2. Verify:
-   - Data appears in Google Sheets ✅
-   - Confirmation email received ✅
+1. Create a workflow.
+2. Use **Import from file**.
+3. Select:
 
----
+```text
+workflows/project-01-customer-inquiry-automation.json
+```
+
+The public export is intentionally inactive and contains placeholder resource values.
+
+## 9. Configure Google Sheets Trigger
+
+Open the `Google Sheets Trigger` node.
+
+Create/select your Google Sheets OAuth2 credential.
+
+Configure:
+
+```text
+Poll Times: Every Minute
+Document: Customer Inquiry - Responses
+Sheet: Form Responses 1
+Trigger On: Row Added
+```
+
+The sanitized workflow export does not contain your live spreadsheet ID, so reselect the document and sheet.
+
+## 10. Configure Data Normalization
+
+The `Normalize Customer Data` node maps:
+
+```text
+Name      → customer_name
+Email     → customer_email
+Phone     → customer_phone
+Message   → customer_message
+Timestamp → submitted_at
+```
+
+The expressions are already included in the workflow export.
+
+## 11. Configure Gmail
+
+Open both Gmail nodes and create/select your Gmail OAuth2 credential.
+
+### Customer Confirmation
+
+Recipient:
+
+```javascript
+{{ $json.customer_email }}
+```
+
+Subject:
+
+```text
+We received your inquiry, {{ $json.customer_name }}
+```
+
+The HTML message is already included in the workflow.
+
+### Business Notification
+
+Replace the placeholder recipient:
+
+```text
+business@example.com
+```
+
+with your internal notification email.
+
+Subject:
+
+```text
+New customer inquiry - {{ $json.customer_name }}
+```
+
+## 12. Test the Workflow
+
+Before publishing, test each node manually.
+
+Confirm that:
+
+- Google Sheets data is detected.
+- The normalization node outputs all five internal fields.
+- The customer email renders correctly.
+- The business notification contains all expected values.
+
+For safe testing, temporarily send both emails to an address you control.
+
+## 13. Publish the Workflow
+
+In n8n 2.x, publish the workflow so that the Google Sheets Trigger runs automatically.
+
+After publishing:
+
+1. Submit a **new** Google Forms response.
+2. Do not click **Execute Workflow**.
+3. Wait up to the polling interval.
+4. Confirm both emails arrive automatically.
+5. Check the **Executions** tab for the production execution.
+
+## 14. Export Safely
+
+When exporting a workflow for a public repository:
+
+- Remove credential references
+- Remove personal email addresses
+- Replace live spreadsheet IDs with placeholders
+- Remove instance-specific metadata
+- Keep the public template inactive by default
+
+The workflow in this repository has already been sanitized.
 
 ## Troubleshooting
 
-| Problem | Fix |
-|---------|-----|
-| "Unable to sign" | Use an incognito window or set up the JSON manually |
-| Email doesn't arrive | Check Spam; free tier has a 100/day limit |
-| Data not in Sheets | Check permissions; share the Sheet with the service account email |
-| Workflow doesn't run | Make sure it's Published (button should be green) |
+### OAuth returns `access_denied`
 
----
+Verify that:
 
-## Useful links
+- The app is in Testing mode.
+- Your Google account is listed as a Test user.
+- You are signing in with the same account.
 
-- [n8n Docs](https://docs.n8n.io)
-- [Google Forms API](https://developers.google.com/forms)
-- [Gmail API](https://developers.google.com/gmail/api)
+If the browser is managed by an organization and OAuth behaves unexpectedly, retry from a personal browser profile or another browser not restricted by corporate policies.
+
+### `invalid_client` / invalid client secret
+
+Confirm that the Client ID and Client Secret belong to the same OAuth client.
+
+If necessary, create a new OAuth client dedicated to the affected integration.
+
+### Workflow only runs when clicking Execute
+
+The workflow must be **published** for production triggers to run automatically.
+
+### Docker container keeps restarting after adding `N8N_ENCRYPTION_KEY`
+
+The encryption key in `.env` must match the key used by the existing n8n data volume. The safest approach is to define the key before the first production start and store it securely.
+
+## Security Notes
+
+Never commit:
+
+```text
+.env
+Client Secret
+OAuth tokens
+API keys
+Passwords
+n8n credential exports
+```
+
+Use `.env.example` only for placeholder values.

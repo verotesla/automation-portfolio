@@ -1,0 +1,160 @@
+{
+  "name": "Project 01 - Customer Inquiry Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Customer Inquiry - Responses"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "REPLACE_WITH_YOUR_SHEET_GID_OR_SELECT_FROM_LIST",
+          "mode": "list",
+          "cachedResultName": "Form Responses 1"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "73d34cc4-e90a-4cab-b1fd-0560091a1ebf",
+      "name": "Google Sheets Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "98dce364-25a6-4cfa-824f-205bc88efd5d",
+              "name": "customer_name",
+              "value": "={{ $json.Name }}",
+              "type": "string"
+            },
+            {
+              "id": "5cd335fc-fc86-4ede-a2ab-08e880d65b4f",
+              "name": "customer_email",
+              "value": "={{ $json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "f1613b09-0466-4adc-8d6c-c5a99fd4e686",
+              "name": "customer_phone",
+              "value": "={{ $json.Phone }}",
+              "type": "string"
+            },
+            {
+              "id": "ef7cb475-8464-4e34-a06d-8e1fc2656f7c",
+              "name": "customer_message",
+              "value": "={{ $json.Message }}",
+              "type": "string"
+            },
+            {
+              "id": "a618e4d8-6bc4-4e21-9940-f7e0ac4939fd",
+              "name": "submitted_at",
+              "value": "={{ $json.Timestamp }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "2b7e033e-1910-4960-a41c-70e65a985c05",
+      "name": "Normalize Customer Data"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.customer_email }}",
+        "subject": "=We received your inquiry, {{ $json.customer_name }}",
+        "message": "=<p>Hello {{ $json.customer_name }},</p>  <p>Thank you for contacting us.</p>  <p>We have received your inquiry:</p>  <p><strong>{{ $json.customer_message }}</strong></p>  <p>Someone from our team will follow up with you soon.</p>  <p>Best regards,<br> Customer Service</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        464,
+        -176
+      ],
+      "id": "9f9b1f66-31db-4189-8daf-51d504efc31c",
+      "name": "Send Customer Confirmation"
+    },
+    {
+      "parameters": {
+        "sendTo": "business@example.com",
+        "subject": "=New customer inquiry - {{ $json.customer_name }}",
+        "message": "=<p><strong>New customer inquiry received</strong></p>  <p><strong>Name:</strong> {{ $json.customer_name }}</p> <p><strong>Email:</strong> {{ $json.customer_email }}</p> <p><strong>Phone:</strong> {{ $json.customer_phone }}</p> <p><strong>Message:</strong> {{ $json.customer_message }}</p> <p><strong>Submitted at:</strong> {{ $json.submitted_at }}</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        464,
+        192
+      ],
+      "id": "ba65a462-8ba7-441d-8cd4-17cad031b726",
+      "name": "Send Business Notification"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize Customer Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Customer Data": {
+      "main": [
+        [
+          {
+            "node": "Send Business Notification",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Customer Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Business Notification": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "nodeGroups": [],
+  "tags": []
+}

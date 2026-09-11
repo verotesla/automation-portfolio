@@ -1,82 +1,184 @@
-# Project 1: Google Forms → Google Sheets + Automated Email
+# Project 01 — Customer Inquiry Automation
 
-![Status](https://img.shields.io/badge/Status-Done-success)
-![Difficulty](https://img.shields.io/badge/Difficulty-Basic-green)
-![Time](https://img.shields.io/badge/Time-2%20hours-blue)
-![Tools](https://img.shields.io/badge/Tools-n8n%20%7C%20Google%20Forms%20%7C%20Sheets%20%7C%20Gmail-purple)
+🌐 **English** | [Español](README.es.md)
 
-🌐 **English** | [Español](./README.es.md)
+## Overview
 
-## Description
+This project automates the intake and follow-up process for customer inquiries.
 
-An automation that captures Google Forms responses, saves them to Google Sheets, and sends an automatic confirmation email to the customer, all in under a minute and with no manual work.
+A customer submits a Google Form, the response is stored in Google Sheets, and a self-hosted n8n workflow detects each new row. The workflow normalizes the incoming data and then branches into two automated actions:
 
-This is the foundational automation for thousands of small businesses that need to capture inquiries, organize data, and confirm receipt automatically.
+1. A personalized confirmation email is sent to the customer.
+2. An internal notification email is sent to the business.
 
-## Use cases
+The workflow was tested end-to-end and runs automatically after being published in n8n.
 
-- **Consulting:** capture inquiries from potential clients.
-- **Services:** take booking/appointment requests.
-- **E-commerce:** process product questions.
-- **Education:** register interested students.
-- **Professional services:** lawyers, accountants, therapists.
+## Architecture
 
-## Tech stack
-
-| Tool | Role | Cost |
-|------|------|------|
-| n8n | Workflow orchestration | Free trial / paid tier |
-| Google Forms | Data capture | Free |
-| Google Sheets | Database | Free |
-| Gmail | Email sending | Free |
-
-## Workflow architecture
-
-```
-┌─────────────┐   ┌────────────────────────┐   ┌─────────────────┐
-│ Google Form │──▶│ Google Sheets Trigger  │──▶│ Gmail Send       │
-│ (submission)│   │ (n8n detects new row)  │   │ (confirmation)   │
-└─────────────┘   └────────────────────────┘   └─────────────────┘
+```mermaid
+flowchart LR
+    A[Google Form] --> B[Google Sheets]
+    B --> C[Google Sheets Trigger]
+    C --> D[Normalize Customer Data]
+    D --> E[Send Customer Confirmation]
+    D --> F[Send Business Notification]
 ```
 
-## Metrics
+## Workflow
 
-| Metric | Value |
-|--------|-------|
-| Response time | < 30 seconds |
-| Automation rate | 100% |
-| Availability | 24/7 |
-| Cost | $0 (free tier) |
+![n8n workflow](assets/03-n8n-workflow.png)
 
-## Concepts learned
+## Tech Stack
 
-- Triggers and webhooks.
-- OAuth2 authentication and Service Accounts.
-- API integration (Google Forms, Sheets, Gmail).
-- Data mapping between nodes.
-- Dynamic variables in workflows.
+| Tool | Role |
+|---|---|
+| n8n | Workflow orchestration |
+| Docker / Docker Compose | Self-hosted n8n environment |
+| Google Forms | Customer inquiry capture |
+| Google Sheets | Response storage |
+| Gmail | Automated email delivery |
+| Google Cloud | OAuth2 authentication and API access |
 
-## Lessons learned
+## Workflow Logic
 
-**What worked:** the Google Sheets Trigger is very stable, Gmail delivery is reliable, and simplicity makes the workflow easy to maintain.
+### 1. Google Sheets Trigger
 
-**What was tricky:** the Google Cloud setup has many steps, and OAuth2 authorization occasionally fails on the first try.
+The workflow polls the Google Sheets response table every minute and starts when a new row is added.
 
-**Future improvements:** real-time email validation, automatic inquiry categorization, CRM integration (Salesforce, HubSpot), and an optional confirmation SMS.
+### 2. Normalize Customer Data
 
-## How to implement
+The incoming Google Forms fields are mapped to a consistent internal structure:
 
-See [`setup-guide.md`](./setup-guide.md) for the full step-by-step guide.
+| Source field | Internal field |
+|---|---|
+| `Name` | `customer_name` |
+| `Email` | `customer_email` |
+| `Phone` | `customer_phone` |
+| `Message` | `customer_message` |
+| `Timestamp` | `submitted_at` |
 
-## Freelance value
+This normalization layer decouples the downstream workflow from the external form schema.
 
-This is one of the most in-demand projects on freelance platforms, with a typical rate of **$200–400 USD**. Small and medium businesses need it to capture and organize inquiries.
+### 3. Send Customer Confirmation
 
-## Screenshots
+A personalized HTML confirmation email is sent to the address submitted in the form. The email uses dynamic n8n expressions for the customer name and inquiry message.
 
-See the [`/assets`](./assets) folder for screenshots of the form, sheet, email, and workflow.
+### 4. Send Business Notification
 
-## Contact
+A second branch sends an internal notification containing the customer name, email, phone, message, and submission timestamp.
 
-**Veronica Pacheco**
-GitHub: [@verotesla](https://github.com/verotesla)
+## Concepts Demonstrated
+
+- Event-driven workflow automation
+- Polling-based triggers
+- OAuth2 authentication
+- Google API integration
+- Data mapping and normalization
+- Dynamic n8n expressions
+- Workflow branching / fan-out
+- Automated HTML email delivery
+- Docker-based self-hosting
+- Persistent n8n storage
+- Public workflow sanitization
+
+## Authentication and Security
+
+Google Sheets and Gmail are connected through Google OAuth2 credentials configured in Google Cloud.
+
+Secrets are **not** included in this repository. The public workflow export is sanitized before being committed and intentionally omits:
+
+- OAuth credentials
+- Client secrets
+- Tokens
+- Personal email addresses
+- Live Google Sheet identifiers
+- Instance-specific n8n metadata
+
+## Testing
+
+The final end-to-end test verified that:
+
+- A new Google Forms submission was stored in Google Sheets.
+- n8n automatically detected the new row.
+- Customer data was normalized.
+- The customer confirmation email was sent automatically.
+- The internal business notification was sent automatically.
+- No manual workflow execution was required.
+
+## Business Value
+
+This pattern can reduce repetitive administrative work for organizations that receive inquiries through online forms.
+
+Potential use cases include:
+
+- Professional services
+- Consulting
+- Appointment requests
+- Education
+- Customer support
+- Small businesses
+- Lead capture
+
+The same architecture can later be extended with CRM integration, lead scoring, AI classification, SMS/WhatsApp notifications, or automated routing.
+
+## Repository Structure
+
+```text
+proyecto-01-forms-sheets-email/
+│
+├── README.md
+├── README.es.md
+├── setup-guide.md
+├── case-study.md
+├── .gitignore
+│
+├── workflows/
+│   ├── README.md
+│   └── project-01-customer-inquiry-automation.json
+│
+├── assets/
+│   ├── README.md
+│   └── 03-n8n-workflow.png
+│
+└── deployment/
+    ├── README.md
+    ├── docker-compose.example.yml
+    └── .env.example
+```
+
+## Workflow Export
+
+The sanitized n8n workflow is available at:
+
+`workflows/project-01-customer-inquiry-automation.json`
+
+After importing it, configure your own:
+
+- Google Sheets document
+- Sheet/tab
+- Google OAuth2 credentials
+- Internal notification email
+
+## Setup
+
+See [setup-guide.md](setup-guide.md) for the complete configuration process.
+
+## Case Study
+
+See [case-study.md](case-study.md) for the problem, implementation, validation, limitations, and next steps.
+
+## Future Improvements
+
+- Email validation
+- Duplicate inquiry detection
+- AI-based inquiry categorization
+- Salesforce or HubSpot integration
+- Lead scoring
+- SMS / WhatsApp notifications
+- Error handling and retry workflows
+- Centralized logging and monitoring
+- Cloud deployment for 24/7 availability
+
+## Status
+
+**Completed and tested end-to-end ✅**

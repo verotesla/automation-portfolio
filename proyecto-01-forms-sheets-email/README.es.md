@@ -1,82 +1,184 @@
-# Proyecto 1: Google Forms → Google Sheets + Email Automático
+# Proyecto 01 — Automatización de Solicitudes de Clientes
 
-![Status](https://img.shields.io/badge/Estado-Completado-success)
-![Dificultad](https://img.shields.io/badge/Dificultad-Básica-green)
-![Tiempo](https://img.shields.io/badge/Tiempo-2%20horas-blue)
-![Herramientas](https://img.shields.io/badge/Herramientas-n8n%20%7C%20Google%20Forms%20%7C%20Sheets%20%7C%20Gmail-purple)
-
-[English](./README.md) | 🌐 **Español**
+🌐 [English](README.md) | **Español**
 
 ## Descripción
 
-Automatización que captura respuestas de Google Forms, las guarda en Google Sheets y envía un email de confirmación automático al cliente, todo en menos de un minuto y sin intervención manual.
+Este proyecto automatiza la recepción y el seguimiento inicial de solicitudes enviadas por clientes.
 
-Es la automatización base de miles de pequeños negocios que necesitan capturar consultas, organizar datos y confirmar recepción automáticamente.
+Una persona envía un Google Form, la respuesta se almacena en Google Sheets y un workflow de n8n autoalojado detecta cada nueva fila. El flujo normaliza los datos y después se divide en dos acciones automáticas:
 
-## Casos de uso
+1. Envía un correo de confirmación personalizado al cliente.
+2. Envía una notificación interna al negocio.
 
-- **Consultoría:** capturar consultas de potenciales clientes.
-- **Servicios:** tomar solicitudes de reservas/citas.
-- **E-commerce:** procesar consultas sobre productos.
-- **Educación:** registrar estudiantes interesados.
-- **Servicios profesionales:** abogados, contadores, psicólogos.
+El workflow fue probado de punta a punta y se ejecuta automáticamente una vez publicado en n8n.
 
-## Stack técnico
+## Arquitectura
 
-| Herramienta | Función | Costo |
-|-------------|---------|-------|
-| n8n | Orquestación del workflow | Free trial / plan pago |
-| Google Forms | Captura de datos | Gratis |
-| Google Sheets | Base de datos | Gratis |
-| Gmail | Envío de emails | Gratis |
-
-## Arquitectura del workflow
-
-```
-┌─────────────┐   ┌────────────────────────┐   ┌─────────────────┐
-│ Google Form │──▶│ Google Sheets Trigger  │──▶│ Gmail Send       │
-│ (respuesta) │   │ (n8n detecta fila)     │   │ (confirmación)   │
-└─────────────┘   └────────────────────────┘   └─────────────────┘
+```mermaid
+flowchart LR
+    A[Google Form] --> B[Google Sheets]
+    B --> C[Google Sheets Trigger]
+    C --> D[Normalize Customer Data]
+    D --> E[Send Customer Confirmation]
+    D --> F[Send Business Notification]
 ```
 
-## Métricas
+## Workflow
 
-| Métrica | Valor |
-|---------|-------|
-| Tiempo de respuesta | < 30 segundos |
-| Tasa de automatización | 100% |
-| Disponibilidad | 24/7 |
-| Costo | $0 (free tier) |
+![Workflow en n8n](assets/03-n8n-workflow.png)
 
-## Conceptos aprendidos
+## Tecnologías
 
-- Triggers y webhooks.
-- Autenticación OAuth2 y Service Accounts.
-- Integración de APIs (Google Forms, Sheets, Gmail).
-- Mapeo de datos entre nodos.
-- Variables dinámicas en workflows.
+| Herramienta | Función |
+|---|---|
+| n8n | Orquestación del workflow |
+| Docker / Docker Compose | Entorno autoalojado de n8n |
+| Google Forms | Captura de solicitudes |
+| Google Sheets | Almacenamiento de respuestas |
+| Gmail | Envío automatizado de correos |
+| Google Cloud | Autenticación OAuth2 y acceso a APIs |
 
-## Lecciones aprendidas
+## Lógica del Workflow
 
-**Lo que funcionó:** el Google Sheets Trigger es muy estable, los envíos de Gmail son confiables, y la simplicidad hace el workflow fácil de mantener.
+### 1. Google Sheets Trigger
 
-**Lo que fue difícil:** el setup de Google Cloud tiene muchos pasos, y la autorización OAuth2 a veces falla al primer intento.
+El workflow consulta la hoja de respuestas cada minuto y se activa cuando detecta una nueva fila.
 
-**Mejoras futuras:** validación de emails en tiempo real, categorización automática de consultas, integración con CRM (Salesforce, HubSpot) y un SMS de confirmación opcional.
+### 2. Normalize Customer Data
 
-## Cómo implementarlo
+Los campos provenientes de Google Forms se transforman a una estructura interna consistente:
 
-Ver el archivo [`setup-guide.md`](./setup-guide.md) para la guía paso a paso completa (en inglés).
+| Campo de origen | Campo interno |
+|---|---|
+| `Name` | `customer_name` |
+| `Email` | `customer_email` |
+| `Phone` | `customer_phone` |
+| `Message` | `customer_message` |
+| `Timestamp` | `submitted_at` |
 
-## Valor freelance
+Esta capa de normalización desacopla el resto del workflow de la estructura externa del formulario.
 
-Es uno de los proyectos más demandados en plataformas freelance, con una tarifa típica de **$200–400 USD**. Clientes pequeños y medianos lo necesitan para capturar y organizar consultas.
+### 3. Send Customer Confirmation
 
-## Capturas de pantalla
+Se envía un correo HTML personalizado a la dirección proporcionada por el cliente. El contenido usa expresiones dinámicas de n8n para insertar el nombre y el mensaje recibido.
 
-Ver carpeta [`/assets`](./assets) para las capturas del formulario, la hoja, el email y el workflow.
+### 4. Send Business Notification
 
-## Contacto
+Una segunda rama envía una notificación interna con nombre, correo, teléfono, mensaje y fecha/hora de envío.
 
-**Veronica Pacheco**
-GitHub: [@verotesla](https://github.com/verotesla)
+## Conceptos Demostrados
+
+- Automatización orientada a eventos
+- Triggers basados en polling
+- Autenticación OAuth2
+- Integración con APIs de Google
+- Mapeo y normalización de datos
+- Expresiones dinámicas de n8n
+- Ramificación / fan-out
+- Envío automatizado de correos HTML
+- Self-hosting con Docker
+- Persistencia de datos de n8n
+- Sanitización de workflows para repositorios públicos
+
+## Autenticación y Seguridad
+
+Google Sheets y Gmail se conectan mediante credenciales OAuth2 configuradas en Google Cloud.
+
+Los secretos **no** se incluyen en este repositorio. El workflow público fue sanitizado y omite intencionalmente:
+
+- Credenciales OAuth
+- Client secrets
+- Tokens
+- Correos personales
+- Identificadores reales de Google Sheets
+- Metadatos específicos de la instancia de n8n
+
+## Pruebas
+
+La prueba final de punta a punta confirmó que:
+
+- Una nueva respuesta de Google Forms se almacenó en Google Sheets.
+- n8n detectó automáticamente la nueva fila.
+- Los datos del cliente fueron normalizados.
+- Se envió automáticamente el correo de confirmación.
+- Se envió automáticamente la notificación interna.
+- No fue necesaria una ejecución manual del workflow.
+
+## Valor para el Negocio
+
+Este patrón puede reducir tareas administrativas repetitivas en organizaciones que reciben solicitudes mediante formularios en línea.
+
+Casos de uso posibles:
+
+- Servicios profesionales
+- Consultoría
+- Solicitudes de citas
+- Educación
+- Atención al cliente
+- Pequeños negocios
+- Captura de leads
+
+La misma arquitectura puede ampliarse con CRM, lead scoring, clasificación con IA, SMS/WhatsApp o enrutamiento automático.
+
+## Estructura del Repositorio
+
+```text
+proyecto-01-forms-sheets-email/
+│
+├── README.md
+├── README.es.md
+├── setup-guide.md
+├── case-study.md
+├── .gitignore
+│
+├── workflows/
+│   ├── README.md
+│   └── project-01-customer-inquiry-automation.json
+│
+├── assets/
+│   ├── README.md
+│   └── 03-n8n-workflow.png
+│
+└── deployment/
+    ├── README.md
+    ├── docker-compose.example.yml
+    └── .env.example
+```
+
+## Workflow Exportado
+
+El workflow sanitizado se encuentra en:
+
+`workflows/project-01-customer-inquiry-automation.json`
+
+Después de importarlo, cada usuario debe configurar:
+
+- Su propio documento de Google Sheets
+- La pestaña/hoja correspondiente
+- Sus credenciales OAuth2 de Google
+- El correo interno de notificación
+
+## Instalación
+
+Consulta [setup-guide.md](setup-guide.md) para el procedimiento completo.
+
+## Caso de Estudio
+
+Consulta [case-study.md](case-study.md) para revisar el problema, la implementación, la validación, las limitaciones y las mejoras futuras.
+
+## Mejoras Futuras
+
+- Validación de correo electrónico
+- Detección de solicitudes duplicadas
+- Clasificación de solicitudes con IA
+- Integración con Salesforce o HubSpot
+- Lead scoring
+- Notificaciones por SMS / WhatsApp
+- Manejo de errores y reintentos
+- Logging y monitoreo centralizado
+- Despliegue en la nube para disponibilidad 24/7
+
+## Estado
+
+**Completado y probado de punta a punta ✅**

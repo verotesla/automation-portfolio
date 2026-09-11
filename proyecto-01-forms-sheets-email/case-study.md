@@ -1,60 +1,155 @@
-# Case Study — Dental Clinic "Sonrisas"
+# Case Study — Customer Inquiry Automation
 
-## The client (illustrative example)
+## Context
 
-**Company:** "Sonrisas" Dental Clinic
-**Industry:** Dental services
-**Size:** 1 owner + 3 employees
-**Contact:** Dr. José Martínez
+Small teams often receive customer inquiries through online forms and then manually perform the same follow-up steps:
 
-## The problem
+- Review each new response
+- Send a confirmation to the customer
+- Notify the responsible person internally
+- Copy data between systems
 
-The clinic received inquiries by phone but didn't log them. Patient details were lost, no availability was tracked, and prospective patients often ended up going to a competitor.
+This creates repetitive administrative work and increases the chance that a request is overlooked.
 
-The pain points:
+## Objective
 
-- 2–3 lost inquiries per week.
-- No record of who called or when.
-- Patients received no confirmation.
-- About 1 hour per day spent logging data manually.
-- Estimated loss: ~$800/month.
+Build a simple, reusable automation that:
 
-## The proposed solution
+1. Captures inquiries through Google Forms.
+2. Stores responses in Google Sheets.
+3. Detects new responses automatically.
+4. Normalizes customer data.
+5. Sends a confirmation to the customer.
+6. Sends an internal business notification.
+7. Runs from a self-hosted n8n environment.
 
-An automated online form that replaces the manual phone-and-paper process:
+## Solution
 
-1. The patient fills out an online form (available 24/7).
-2. Data is saved automatically to a Google Sheet.
-3. The doctor receives an immediate email alert.
-4. The patient receives an automatic confirmation.
+The implementation uses Google Forms as the input layer and Google Sheets as the response store.
 
-This way no inquiry is lost: it's archived, the doctor is notified right away, and the patient feels attended to from first contact.
+n8n polls the response sheet every minute. When a new row is detected, the workflow maps the external field names to a stable internal schema and fans out into two Gmail actions.
 
-## Implementation
+```text
+Google Form
+    ↓
+Google Sheets
+    ↓
+Google Sheets Trigger
+    ↓
+Normalize Customer Data
+    ├──→ Customer Confirmation
+    └──→ Business Notification
+```
 
-Built with n8n, Google Forms, Google Sheets, and Gmail. A form captures the patient's details, a Google Sheets trigger detects each new submission, and Gmail sends both the patient confirmation and the doctor's alert. Setup took about two days.
+## Technical Design
 
-## Expected results
+### Trigger
 
-| Metric | Before | After |
-|--------|--------|-------|
-| Inquiries captured/week | 12 | 18 |
-| Time spent logging | 1 hour/day | 0 |
-| Patient confirmations | 0% | 100% |
-| Lost inquiries | Frequent | Zero |
+`Google Sheets Trigger` monitors the linked response sheet for `Row Added`.
 
-## Project value
+### Normalization Layer
 
-A capture-and-confirm automation like this is typically priced at **$200–400 USD** on freelance platforms, plus optional monthly maintenance. The return is direct: each recovered patient is worth far more than the cost of the automation, so it tends to pay for itself within days.
+The workflow maps:
 
-## Replicability
+```text
+Name      → customer_name
+Email     → customer_email
+Phone     → customer_phone
+Message   → customer_message
+Timestamp → submitted_at
+```
 
-The same workflow applies to many appointment-based and professional services: medical and dental practices, psychologists, vets, physiotherapists, salons, language academies, gyms, lawyers, accountants, and consultants.
+This makes downstream nodes independent of the original Google Forms field names.
 
-## Key technical takeaway
+### Fan-out
 
-This foundational project shows that simple automations can deliver high ROI. The core skills — triggers, OAuth2 authentication, and data mapping between Google services — are the building blocks for every more complex automation in the portfolio.
+One normalized item is passed to two independent branches:
 
----
+- Customer-facing confirmation
+- Internal business notification
 
-*Note: This case study is illustrative, for portfolio purposes. Client data is fictional.*
+This demonstrates a simple fan-out pattern in n8n.
+
+### Authentication
+
+Google Sheets and Gmail use OAuth2 credentials created in Google Cloud.
+
+The n8n instance is self-hosted in Docker with persistent storage.
+
+## Validation
+
+The workflow was validated with an end-to-end production test.
+
+A new Google Forms response was submitted after the workflow was published.
+
+The test confirmed:
+
+- The response reached Google Sheets.
+- The Google Sheets Trigger detected the new row automatically.
+- The normalization node produced all expected fields.
+- The customer confirmation email arrived successfully.
+- The internal notification email arrived successfully.
+- The automation completed without manually clicking Execute Workflow.
+
+## Outcome
+
+The project demonstrates a complete automated intake flow that connects a form, spreadsheet, workflow engine, and email service.
+
+The final implementation is more robust than a simple one-email demo because it includes:
+
+- A normalization layer
+- Two independent notification branches
+- OAuth2 integrations
+- Self-hosted n8n
+- Docker-based persistence
+- A sanitized public workflow export
+
+## Limitations
+
+This project intentionally remains a foundational automation.
+
+Current limitations include:
+
+- Polling interval of up to one minute
+- Local n8n availability depends on the host computer being running
+- No retry/error workflow
+- No duplicate detection
+- No CRM integration
+- No centralized logging
+- No email verification
+- Generic email templates
+
+These limitations provide clear opportunities for later portfolio projects.
+
+## Security Considerations
+
+The public repository does not include:
+
+- Client secrets
+- OAuth tokens
+- Personal notification addresses
+- Live Google Sheet IDs
+- Private n8n credential data
+
+A sanitized workflow template is provided instead.
+
+## Future Improvements
+
+Possible extensions include:
+
+1. Add Salesforce or HubSpot
+2. Add AI-based inquiry categorization
+3. Score and route leads automatically
+4. Add duplicate detection
+5. Add error-handling and retry workflows
+6. Add Slack, SMS, or WhatsApp notifications
+7. Move n8n to a cloud-hosted Docker environment
+8. Add monitoring and centralized logs
+
+## Key Takeaway
+
+The main value of this project is not the individual tools. It is the end-to-end integration pattern:
+
+**capture → store → detect → normalize → branch → notify**
+
+That same pattern can be reused in many real business processes.
